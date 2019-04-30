@@ -1,21 +1,21 @@
-# &lt;custom-element&gt; element
+# &lt;filterable-input&gt; element
 
 Boilerplate for creating a custom element.
 
 ## Installation
 
 ```
-$ npm install @github/custom-element-element
+$ npm install @github/filterable-input-element
 ```
 
 ## Usage
 
 ```js
-import '@github/custom-element-element'
+import '@github/filterable-input-element'
 ```
 
 ```html
-<custom-element></custom-element>
+<filterable-input></filterable-input>
 ```
 
 ## Browser support

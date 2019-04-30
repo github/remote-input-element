@@ -1,6 +1,6 @@
 /* @flow strict */
 
-class CustomElementElement extends HTMLElement {
+class FilterableInputElement extends HTMLElement {
   constructor() {
     super()
   }
@@ -12,9 +12,9 @@ class CustomElementElement extends HTMLElement {
   disconnectedCallback() {}
 }
 
-export default CustomElementElement
+export default FilterableInputElement
 
-if (!window.customElements.get('custom-element')) {
-  window.CustomElementElement = CustomElementElement
-  window.customElements.define('custom-element', CustomElementElement)
+if (!window.customElements.get('filterable-input')) {
+  window.FilterableInputElement = FilterableInputElement
+  window.customElements.define('filterable-input', FilterableInputElement)
 }
