@@ -13,16 +13,28 @@ describe('filterable-input', function() {
 
   describe('after tree insertion', function() {
     beforeEach(function() {
-      document.body.innerHTML = '<filterable-input></filterable-input>'
+      document.body.innerHTML = `
+        <filterable-input aria-owns="results" src="/results">
+          <input>
+        </filterable-input>
+        <div id="results"></div>
+      `
     })
 
     afterEach(function() {
       document.body.innerHTML = ''
     })
 
-    it('initiates', function() {
-      const ce = document.querySelector('filterable-input')
-      assert.equal(ce.textContent, ':wave:')
+    it('loads content', function(done) {
+      const filterable = document.querySelector('filterable-input')
+      const input = document.querySelector('input')
+      const results = document.querySelector('#results')
+      filterable.addEventListener('loadend', function() {
+        assert.equal(results.querySelector('li').textContent, 'item: test')
+        done()
+      })
+      input.value = 'test'
+      input.focus()
     })
   })
 })
