@@ -1,6 +1,6 @@
 # &lt;filterable-input&gt; element
 
-Boilerplate for creating a custom element.
+Retrieve search results from server.
 
 ## Installation
 
@@ -15,7 +15,10 @@ import '@github/filterable-input-element'
 ```
 
 ```html
-<filterable-input></filterable-input>
+<filterable-input src="/results" aria-owns="filtered-list">
+  <input type="text">
+</filterable-input>
+<ul id="filtered-list"></ul>
 ```
 
 ## Browser support
