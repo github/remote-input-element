@@ -5,7 +5,10 @@
   <title>filterable-input demo</title>
 </head>
 <body>
-  <filterable-input></filterable-input>
+  <filterable-input aria-owns="results" src="/examples/results.html">
+    <input type="text">
+  </filterable-input>
+  <div id="results"></div>
 
   <!-- GitHub Pages development script, uncomment when running example locally and comment out the production one -->
   <!-- <script src="../dist/index.umd.js"></script> -->
