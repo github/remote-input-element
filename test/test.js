@@ -1,22 +1,22 @@
-describe('filterable-input', function() {
+describe('remote-input', function() {
   describe('element creation', function() {
     it('creates from document.createElement', function() {
-      const el = document.createElement('filterable-input')
-      assert.equal('FILTERABLE-INPUT', el.nodeName)
+      const el = document.createElement('remote-input')
+      assert.equal('REMOTE-INPUT', el.nodeName)
     })
 
     it('creates from constructor', function() {
-      const el = new window.FilterableInputElement()
-      assert.equal('FILTERABLE-INPUT', el.nodeName)
+      const el = new window.RemoteInputElement()
+      assert.equal('REMOTE-INPUT', el.nodeName)
     })
   })
 
   describe('after tree insertion', function() {
     beforeEach(function() {
       document.body.innerHTML = `
-        <filterable-input aria-owns="results" src="/results">
+        <remote-input aria-owns="results" src="/results">
           <input>
-        </filterable-input>
+        </remote-input>
         <div id="results"></div>
       `
     })
@@ -26,10 +26,10 @@ describe('filterable-input', function() {
     })
 
     it('loads content', function(done) {
-      const filterable = document.querySelector('filterable-input')
+      const remoteInput = document.querySelector('remote-input')
       const input = document.querySelector('input')
       const results = document.querySelector('#results')
-      filterable.addEventListener('loadend', function() {
+      remoteInput.addEventListener('loadend', function() {
         assert.equal(results.querySelector('li').textContent, 'item: test')
         done()
       })

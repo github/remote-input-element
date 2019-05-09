@@ -1,11 +1,11 @@
 {
-  "name": "@github/filterable-input-element",
+  "name": "@github/remote-input-element",
   "version": "0.0.1",
-  "description": "Boilerplate for creating a custom element.",
+  "description": "An input element that sends its value to a server endpoint and renders the response body.",
   "main": "dist/index.umd.js",
   "module": "dist/index.esm.js",
   "license": "MIT",
-  "repository": "github/filterable-input-element",
+  "repository": "github/remote-input-element",
   "files": [
     "dist"
   ],

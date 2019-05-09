@@ -1,24 +1,33 @@
-# &lt;filterable-input&gt; element
+# &lt;remote-input&gt; element
 
-Retrieve search results from server.
+An input element that sends its value to a server endpoint and renders the response body.
 
 ## Installation
 
 ```
-$ npm install @github/filterable-input-element
+$ npm install @github/remote-input-element
 ```
 
 ## Usage
 
 ```js
-import '@github/filterable-input-element'
+import '@github/remote-input-element'
 ```
 
 ```html
-<filterable-input src="/results" aria-owns="filtered-list">
-  <input type="text">
-</filterable-input>
-<ul id="filtered-list"></ul>
+<!-- Filter a list of items from the server -->
+<remote-input src="/query" aria-owns="results">
+  <input>
+</remote-input>
+<ul id="results"></ul>
+```
+
+```html
+<!-- Live preview of Markdown -->
+<remote-input src="/preview" aria-owns="md-preview">
+  <textarea></textarea>
+</remote-input>
+<div id="md-preview"></div>
 ```
 
 ## Browser support

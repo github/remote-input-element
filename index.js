@@ -1,6 +1,6 @@
 /* @flow strict */
 
-class FilterableInputElement extends HTMLElement {
+class RemoteInputElement extends HTMLElement {
   currentQuery: ?string
   debounceInputChange: Event => void
   boundFetchResults: Event => mixed
@@ -29,7 +29,7 @@ class FilterableInputElement extends HTMLElement {
   }
 
   get input(): ?HTMLInputElement {
-    const input = this.querySelector('input')
+    const input = this.querySelector('input, textarea')
     return input instanceof HTMLInputElement ? input : null
   }
 
@@ -93,9 +93,9 @@ function debounce(callback) {
   }
 }
 
-export default FilterableInputElement
+export default RemoteInputElement
 
-if (!window.customElements.get('filterable-input')) {
-  window.FilterableInputElement = FilterableInputElement
-  window.customElements.define('filterable-input', FilterableInputElement)
+if (!window.customElements.get('remote-input')) {
+  window.RemoteInputElement = RemoteInputElement
+  window.customElements.define('remote-input', RemoteInputElement)
 }
