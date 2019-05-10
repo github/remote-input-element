@@ -29,6 +29,7 @@ describe('remote-input', function() {
       const remoteInput = document.querySelector('remote-input')
       const input = document.querySelector('input')
       const results = document.querySelector('#results')
+      assert.equal(results.innerHTML, '')
       remoteInput.addEventListener('loadend', function() {
         assert.equal(results.querySelector('ol').getAttribute('data-src'), '/results?q=test')
         done()
