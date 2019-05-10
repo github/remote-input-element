@@ -5,6 +5,16 @@ class RemoteInputElement extends HTMLElement {
   debounceInputChange: Event => void
   boundFetchResults: Event => mixed
 
+  static get observedAttributes() {
+    return ['src']
+  }
+
+  attributeChangedCallback(name: string) {
+    if (name === 'src') {
+      this.fetchResults(false)
+    }
+  }
+
   connectedCallback() {
     const input = this.input
     if (!input) return
@@ -53,10 +63,10 @@ class RemoteInputElement extends HTMLElement {
     this.setAttribute('name', name)
   }
 
-  async fetchResults() {
+  async fetchResults(checkCurrentQuery: boolean = true) {
     if (!this.input) return
     const query = this.input.value.trim()
-    if (this.currentQuery === query) return
+    if (checkCurrentQuery && this.currentQuery === query) return
     this.currentQuery = query
     const src = this.src
     if (!src) return
@@ -74,7 +84,7 @@ class RemoteInputElement extends HTMLElement {
       const html = await fetch(url).then(data => data.text())
       this.dispatchEvent(new CustomEvent('load'))
       resultsContainer.innerHTML = html
-    } catch (err) {
+    } catch {
       this.dispatchEvent(new CustomEvent('error'))
     }
     this.removeAttribute('loading')
