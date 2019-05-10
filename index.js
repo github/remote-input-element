@@ -38,9 +38,9 @@ class RemoteInputElement extends HTMLElement {
     input.removeEventListener('input', this.debounceInputChange)
   }
 
-  get input(): ?HTMLInputElement {
+  get input(): ?(HTMLInputElement | HTMLTextAreaElement) {
     const input = this.querySelector('input, textarea')
-    return input instanceof HTMLInputElement ? input : null
+    return input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement ? input : null
   }
 
   get resultsContainer(): ?HTMLElement {
