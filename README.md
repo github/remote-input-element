@@ -30,6 +30,35 @@ import '@github/remote-input-element'
 <div id="md-preview"></div>
 ```
 
+### Styling loading state
+
+`[loading]` attribute will be added to `<remote-input>` when a network request is kicked off, and removed when it ends.
+
+```css
+.loading-icon { display: none; }
+remote-input[loading] .loading-icon { display: inline; }
+```
+
+### Events
+
+```js
+const remoteInput = document.querySelector('remote-input')
+
+// Network request lifecycle events.
+remoteInput.addEventListener('loadstart', function(event) {
+  console.log('Network request started', event)
+})
+remoteInput.addEventListener('loadend', function(event) {
+  console.log('Network request complete', event)
+})
+remoteInput.addEventListener('load', function(event) {
+  console.log('Network request succeeded', event)
+})
+remoteInput.addEventListener('error', function(event) {
+  console.log('Network request failed', event)
+})
+```
+
 ## Browser support
 
 Browsers without native [custom element support][support] require a [polyfill][].
