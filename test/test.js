@@ -30,8 +30,30 @@ describe('remote-input', function() {
       const input = document.querySelector('input')
       const results = document.querySelector('#results')
       remoteInput.addEventListener('loadend', function() {
-        assert.equal(results.querySelector('li').textContent, 'item: test')
+        assert.equal(results.querySelector('ol').getAttribute('data-src'), '/results?q=test')
         done()
+      })
+      input.value = 'test'
+      input.focus()
+    })
+
+    it('loads content again after src is changed', function(done) {
+      const remoteInput = document.querySelector('remote-input')
+      const input = document.querySelector('input')
+      const results = document.querySelector('#results')
+
+      function listenOnce(cb) {
+        remoteInput.addEventListener('loadend', cb, {once: true})
+      }
+      listenOnce(function() {
+        assert.equal(results.querySelector('ol').getAttribute('data-src'), '/results?q=test')
+
+        listenOnce(function() {
+          assert.equal(results.querySelector('ol').getAttribute('data-src'), '/srcChanged?q=test')
+          done()
+        })
+
+        remoteInput.src = '/srcChanged'
       })
       input.value = 'test'
       input.focus()

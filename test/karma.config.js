@@ -1,9 +1,8 @@
 function request(request, response, next) {
-  if (request.method === 'GET' && request.url.startsWith('/results?q=')) {
+  if (request.method === 'GET') {
     response.writeHead(200)
     response.end(`
-      <ol>
-        <li>item: ${request.url.split('=')[1]}</li>
+      <ol data-src="${request.url}">
         <li>item</li>
         <li>item</li>
         <li>item</li>
