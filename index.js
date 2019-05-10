@@ -65,7 +65,7 @@ class RemoteInputElement extends HTMLElement {
 
   async fetchResults(checkCurrentQuery: boolean = true) {
     if (!this.input) return
-    const query = this.input.value.trim()
+    const query = this.input.value
     if (checkCurrentQuery && this.currentQuery === query) return
     this.currentQuery = query
     const src = this.src
