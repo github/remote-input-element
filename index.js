@@ -9,8 +9,8 @@ class RemoteInputElement extends HTMLElement {
     return ['src']
   }
 
-  attributeChangedCallback(name: string) {
-    if (name === 'src') {
+  attributeChangedCallback(name: string, oldValue: string) {
+    if (oldValue && name === 'src') {
       this.fetchResults(false)
     }
   }
