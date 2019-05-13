@@ -32,7 +32,7 @@ import '@github/remote-input-element'
 
 ### Styling loading state
 
-`[loading]` attribute will be added to `<remote-input>` when a network request is kicked off, and removed when it ends.
+A boolean `[loading]` attribute is added to `<remote-input>` when a network request begins and removed when it ends.
 
 ```css
 .loading-icon { display: none; }
