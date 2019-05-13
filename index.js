@@ -11,7 +11,7 @@ class RemoteInputElement extends HTMLElement {
 
   attributeChangedCallback(name: string, oldValue: string) {
     if (oldValue && name === 'src') {
-      this.fetchResults(false)
+      fetchResults(this, false)
     }
   }
 
@@ -22,8 +22,8 @@ class RemoteInputElement extends HTMLElement {
     input.setAttribute('autocomplete', 'off')
     input.setAttribute('spellcheck', 'false')
 
-    this.debounceInputChange = debounce(this.fetchResults.bind(this))
-    this.boundFetchResults = this.fetchResults.bind(this)
+    this.debounceInputChange = debounce(() => fetchResults(this))
+    this.boundFetchResults = () => fetchResults(this)
     input.addEventListener('focus', this.boundFetchResults)
     input.addEventListener('change', this.boundFetchResults)
     input.addEventListener('input', this.debounceInputChange)
@@ -62,34 +62,34 @@ class RemoteInputElement extends HTMLElement {
   set name(name: string) {
     this.setAttribute('name', name)
   }
+}
 
-  async fetchResults(checkCurrentQuery: boolean = true) {
-    if (!this.input) return
-    const query = this.input.value
-    if (checkCurrentQuery && this.currentQuery === query) return
-    this.currentQuery = query
-    const src = this.src
-    if (!src) return
-    const resultsContainer = this.resultsContainer
-    if (!resultsContainer) return
+async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: boolean = true) {
+  if (!remoteInput.input) return
+  const query = remoteInput.input.value
+  if (checkCurrentQuery && remoteInput.currentQuery === query) return
+  remoteInput.currentQuery = query
+  const src = remoteInput.src
+  if (!src) return
+  const resultsContainer = remoteInput.resultsContainer
+  if (!resultsContainer) return
 
-    const url = new URL(src, window.location.origin)
-    const params = new URLSearchParams(url.search)
-    params.append(this.name, query)
-    url.search = params.toString()
+  const url = new URL(src, window.location.origin)
+  const params = new URLSearchParams(url.search)
+  params.append(remoteInput.name, query)
+  url.search = params.toString()
 
-    this.dispatchEvent(new CustomEvent('loadstart'))
-    this.setAttribute('loading', '')
-    try {
-      const html = await fetch(url).then(data => data.text())
-      this.dispatchEvent(new CustomEvent('load'))
-      resultsContainer.innerHTML = html
-    } catch {
-      this.dispatchEvent(new CustomEvent('error'))
-    }
-    this.removeAttribute('loading')
-    this.dispatchEvent(new CustomEvent('loadend'))
+  remoteInput.dispatchEvent(new CustomEvent('loadstart'))
+  remoteInput.setAttribute('loading', '')
+  try {
+    const html = await fetch(url).then(data => data.text())
+    remoteInput.dispatchEvent(new CustomEvent('load'))
+    resultsContainer.innerHTML = html
+  } catch {
+    remoteInput.dispatchEvent(new CustomEvent('error'))
   }
+  remoteInput.removeAttribute('loading')
+  remoteInput.dispatchEvent(new CustomEvent('loadend'))
 }
 
 function debounce(callback) {
