@@ -1,3 +1,17 @@
+function request(request, response, next) {
+  if (request.method === 'GET') {
+    response.writeHead(200)
+    response.end(`
+      <ol data-src="${request.url}">
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+      </ol>
+    `)
+    return
+  }
+  next()
+}
 module.exports = function(config) {
   config.set({
     frameworks: ['mocha', 'chai'],
@@ -9,6 +23,13 @@ module.exports = function(config) {
     browsers: ['ChromeHeadless'],
     autoWatch: false,
     singleRun: true,
-    concurrency: Infinity
+    concurrency: Infinity,
+    middleware: ['request'],
+    plugins: [
+      'karma-*',
+      {
+        'middleware:request': ['value', request]
+      }
+    ]
   })
 }
