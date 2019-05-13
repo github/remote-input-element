@@ -43,10 +43,6 @@ class RemoteInputElement extends HTMLElement {
     return input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement ? input : null
   }
 
-  get resultsContainer(): ?HTMLElement {
-    return document.getElementById(this.getAttribute('aria-owns') || '')
-  }
-
   get src(): string {
     return this.getAttribute('src') || ''
   }
@@ -54,29 +50,22 @@ class RemoteInputElement extends HTMLElement {
   set src(url: string) {
     this.setAttribute('src', url)
   }
-
-  get name(): string {
-    return this.getAttribute('name') || 'q'
-  }
-
-  set name(name: string) {
-    this.setAttribute('name', name)
-  }
 }
 
 async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: boolean = true) {
-  if (!remoteInput.input) return
-  const query = remoteInput.input.value
+  const input = remoteInput.input
+  if (!input) return
+  const query = input.value
   if (checkCurrentQuery && remoteInput.currentQuery === query) return
   remoteInput.currentQuery = query
   const src = remoteInput.src
   if (!src) return
-  const resultsContainer = remoteInput.resultsContainer
+  const resultsContainer = document.getElementById(remoteInput.getAttribute('aria-owns') || '')
   if (!resultsContainer) return
 
   const url = new URL(src, window.location.origin)
   const params = new URLSearchParams(url.search)
-  params.append(remoteInput.name, query)
+  params.append(remoteInput.getAttribute('param') || 'q', query)
   url.search = params.toString()
 
   remoteInput.dispatchEvent(new CustomEvent('loadstart'))
