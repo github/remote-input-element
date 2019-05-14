@@ -22,9 +22,13 @@ import '@github/remote-input-element'
 <ul id="results"></ul>
 ```
 
+A GET request will be sent to `/query?q=${input.value}`.
+
+The parameter name (`q`) is customizable with the `[param]` attribute:
+
 ```html
 <!-- Live preview of Markdown -->
-<remote-input src="/preview" aria-owns="md-preview">
+<remote-input src="/preview" aria-owns="md-preview" param="body">
   <textarea></textarea>
 </remote-input>
 <div id="md-preview"></div>

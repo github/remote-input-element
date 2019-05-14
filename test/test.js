@@ -38,6 +38,20 @@ describe('remote-input', function() {
       input.focus()
     })
 
+    it('repects param attribute', function(done) {
+      const remoteInput = document.querySelector('remote-input')
+      const input = document.querySelector('input')
+      const results = document.querySelector('#results')
+      remoteInput.setAttribute('param', 'robot')
+      assert.equal(results.innerHTML, '')
+      remoteInput.addEventListener('loadend', function() {
+        assert.equal(results.querySelector('ol').getAttribute('data-src'), '/results?robot=test')
+        done()
+      })
+      input.value = 'test'
+      input.focus()
+    })
+
     it('loads content again after src is changed', function(done) {
       const remoteInput = document.querySelector('remote-input')
       const input = document.querySelector('input')
