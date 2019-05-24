@@ -1,4 +1,4 @@
-function request(request, response, next) {
+function reply(request, response, next) {
   if (request.method === 'GET') {
     response.writeHead(200)
     response.end(`
@@ -28,7 +28,7 @@ module.exports = function(config) {
     plugins: [
       'karma-*',
       {
-        'middleware:request': ['value', request]
+        'middleware:request': ['value', reply]
       }
     ]
   })
