@@ -71,7 +71,8 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
   remoteInput.dispatchEvent(new CustomEvent('loadstart'))
   remoteInput.setAttribute('loading', '')
   try {
-    const html = await fetch(url).then(data => data.text())
+    const response = await fetch(url)
+    const html = await response.text()
     remoteInput.dispatchEvent(new CustomEvent('load'))
     resultsContainer.innerHTML = html
   } catch {
