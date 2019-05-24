@@ -71,7 +71,7 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
   remoteInput.dispatchEvent(new CustomEvent('loadstart'))
   remoteInput.setAttribute('loading', '')
   try {
-    const response = await fetch(url)
+    const response = await fetch(url, {headers: {accept: 'text/html; fragment'}})
     const html = await response.text()
     remoteInput.dispatchEvent(new CustomEvent('load'))
     resultsContainer.innerHTML = html
