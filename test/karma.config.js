@@ -1,15 +1,23 @@
 function reply(request, response, next) {
   if (request.method === 'GET') {
-    const status = request.url.startsWith('/500') ? 500 : 200
-    response.writeHead(status)
-    response.ok = status === 200
-    response.end(`
-      <ol data-src="${request.url}">
-        <li>item</li>
-        <li>item</li>
-        <li>item</li>
-      </ol>
-    `)
+    if (request.url.startsWith('/500')) {
+      response.writeHead(500)
+      response.ok = false
+      response.end('Server error')
+    } else if (request.url.startsWith('/network-error')) {
+      request.destroy(new Error())
+      response.end()
+    } else {
+      response.writeHead(200)
+      response.ok = true
+      response.end(`
+        <ol data-src="${request.url}">
+          <li>item</li>
+          <li>item</li>
+          <li>item</li>
+        </ol>
+      `)
+    }
     return
   }
   next()
