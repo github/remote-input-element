@@ -23,7 +23,7 @@
         html = `<marquee>${url.searchParams.get('q') || '🐈 Nothing to preview 🐈'}</marquee>`
       }
       const promiseHTML = new Promise(resolve => resolve(html))
-      return new Promise(resolve => resolve({text: () => promiseHTML}))
+      return new Promise(resolve => resolve({ok: true, text: () => promiseHTML}))
     }
     window.fetch = fakeFetch
   </script>
