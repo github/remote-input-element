@@ -71,6 +71,7 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
   remoteInput.dispatchEvent(new CustomEvent('loadstart'))
   remoteInput.setAttribute('loading', '')
   let response
+  let errored = false
   let html = ''
   try {
     response = await fetch(url, {
@@ -80,15 +81,19 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
     html = await response.text()
     remoteInput.dispatchEvent(new CustomEvent('load'))
   } catch {
-    // Network errors handled below.
-  }
-  if (response && response.ok) {
-    resultsContainer.innerHTML = html
-  } else {
+    errored = true
     remoteInput.dispatchEvent(new CustomEvent('error'))
   }
-
   remoteInput.removeAttribute('loading')
+  if (errored) return
+
+  if (response && response.ok) {
+    remoteInput.dispatchEvent(new CustomEvent('remote-input-success', {bubbles: true}))
+    resultsContainer.innerHTML = html
+  } else {
+    remoteInput.dispatchEvent(new CustomEvent('remote-input-error', {bubbles: true}))
+  }
+
   remoteInput.dispatchEvent(new CustomEvent('loadend'))
 }
 
