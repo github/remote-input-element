@@ -70,7 +70,8 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
 
   remoteInput.dispatchEvent(new CustomEvent('loadstart'))
   remoteInput.setAttribute('loading', '')
-  let response, html
+  let response
+  let html = ''
   try {
     response = await fetch(url, {
       credentials: 'same-origin',
@@ -79,9 +80,9 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
     html = await response.text()
     remoteInput.dispatchEvent(new CustomEvent('load'))
   } catch {
-    // noop
+    // Network errors handled below.
   }
-  if (response && response.ok && html) {
+  if (response && response.ok) {
     resultsContainer.innerHTML = html
   } else {
     remoteInput.dispatchEvent(new CustomEvent('error'))
