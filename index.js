@@ -70,18 +70,30 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
 
   remoteInput.dispatchEvent(new CustomEvent('loadstart'))
   remoteInput.setAttribute('loading', '')
+  let response
+  let errored = false
+  let html = ''
   try {
-    const response = await fetch(url, {
+    response = await fetch(url, {
       credentials: 'same-origin',
       headers: {accept: 'text/html; fragment'}
     })
-    const html = await response.text()
+    html = await response.text()
     remoteInput.dispatchEvent(new CustomEvent('load'))
-    resultsContainer.innerHTML = html
   } catch {
+    errored = true
     remoteInput.dispatchEvent(new CustomEvent('error'))
   }
   remoteInput.removeAttribute('loading')
+  if (errored) return
+
+  if (response && response.ok) {
+    remoteInput.dispatchEvent(new CustomEvent('remote-input-success', {bubbles: true}))
+    resultsContainer.innerHTML = html
+  } else {
+    remoteInput.dispatchEvent(new CustomEvent('remote-input-error', {bubbles: true}))
+  }
+
   remoteInput.dispatchEvent(new CustomEvent('loadend'))
 }
 

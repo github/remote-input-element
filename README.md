@@ -45,23 +45,12 @@ remote-input[loading] .loading-icon { display: inline; }
 
 ### Events
 
-```js
-const remoteInput = document.querySelector('remote-input')
-
-// Network request lifecycle events.
-remoteInput.addEventListener('loadstart', function(event) {
-  console.log('Network request started', event)
-})
-remoteInput.addEventListener('loadend', function(event) {
-  console.log('Network request complete', event)
-})
-remoteInput.addEventListener('load', function(event) {
-  console.log('Network request succeeded', event)
-})
-remoteInput.addEventListener('error', function(event) {
-  console.log('Network request failed', event)
-})
-```
+- `loadstart` - The server fetch has started.
+- `load` - The network request completed successfully.
+- `error` - The network request failed.
+- `loadend` - The network request has completed.
+- `remote-input-success` – Received a successful response (status code 200-299). Bubbles.
+- `remote-input-error` – Received a not successful response. Bubbles.
 
 ## Browser support
 

@@ -30,12 +30,53 @@ describe('remote-input', function() {
       const input = document.querySelector('input')
       const results = document.querySelector('#results')
       assert.equal(results.innerHTML, '')
+      let successEvent = false
+      remoteInput.addEventListener('remote-input-success', function() {
+        successEvent = true
+      })
       remoteInput.addEventListener('loadend', function() {
+        assert.ok(successEvent, 'success event happened')
         assert.equal(results.querySelector('ol').getAttribute('data-src'), '/results?q=test')
         done()
       })
       input.value = 'test'
       input.focus()
+    })
+
+    it('handles not ok responses', function(done) {
+      const remoteInput = document.querySelector('remote-input')
+      const input = document.querySelector('input')
+      const results = document.querySelector('#results')
+      remoteInput.src = '/500'
+      assert.equal(results.innerHTML, '')
+      let errorEvent = false
+      remoteInput.addEventListener('remote-input-error', function() {
+        errorEvent = true
+      })
+      remoteInput.addEventListener('loadend', function() {
+        assert.ok(errorEvent, 'error event happened')
+        assert.equal(results.innerHTML, '', 'nothing was appended')
+        done()
+      })
+      input.value = 'test'
+      input.focus()
+    })
+
+    it('handles network error', function(done) {
+      const remoteInput = document.querySelector('remote-input')
+      const input = document.querySelector('input')
+      const results = document.querySelector('#results')
+      remoteInput.src = '/network-error'
+      assert.equal(results.innerHTML, '')
+      remoteInput.addEventListener('error', async function() {
+        await Promise.resolve()
+        assert.equal(results.innerHTML, '', 'nothing was appended')
+        assert.notOk(remoteInput.hasAttribute('loading'), 'loading attribute was removed')
+        done()
+      })
+      input.value = 'test'
+      input.focus()
+      assert.ok(remoteInput.hasAttribute('loading'), 'loading attribute was added')
     })
 
     it('repects param attribute', function(done) {
