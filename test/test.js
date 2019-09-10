@@ -38,6 +38,25 @@ describe('remote-input', function() {
       input.focus()
     })
 
+    it('handles not ok responses', function(done) {
+      const remoteInput = document.querySelector('remote-input')
+      const input = document.querySelector('input')
+      const results = document.querySelector('#results')
+      remoteInput.src = '/500'
+      assert.equal(results.innerHTML, '')
+      let errorHappened = false
+      remoteInput.addEventListener('error', function() {
+        errorHappened = true
+      })
+      remoteInput.addEventListener('loadend', function() {
+        assert.ok(errorHappened, 'error event happened')
+        assert.equal(results.innerHTML, '', 'nothing was appended')
+        done()
+      })
+      input.value = 'test'
+      input.focus()
+    })
+
     it('repects param attribute', function(done) {
       const remoteInput = document.querySelector('remote-input')
       const input = document.querySelector('input')

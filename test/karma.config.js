@@ -1,6 +1,8 @@
 function reply(request, response, next) {
   if (request.method === 'GET') {
-    response.writeHead(200)
+    const status = request.url.startsWith('/500') ? 500 : 200
+    response.writeHead(status)
+    response.ok = status === 200
     response.end(`
       <ol data-src="${request.url}">
         <li>item</li>
