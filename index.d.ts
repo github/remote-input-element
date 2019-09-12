@@ -5,6 +5,6 @@ export default class RemoteInputElement extends HTMLElement {
 
 declare global {
   interface Window {
-    RemoteInputElement: RemoteInputElement
+    RemoteInputElement: typeof RemoteInputElement
   }
 }
