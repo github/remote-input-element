@@ -63,7 +63,7 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
   const resultsContainer = document.getElementById(remoteInput.getAttribute('aria-owns') || '')
   if (!resultsContainer) return
 
-  const url = new URL(src, window.location.origin)
+  const url = new URL(src, window.location.href)
   const params = new URLSearchParams(url.search)
   params.append(remoteInput.getAttribute('param') || 'q', query)
   url.search = params.toString()
