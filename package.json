@@ -14,10 +14,8 @@
   "scripts": {
     "clean": "rm -rf dist",
     "lint": "github-lint",
-    "prebuild": "npm run clean && npm run lint && mkdir dist",
-    "build-umd": "BABEL_ENV=umd babel index.js -o dist/index.umd.js && cp index.js.flow dist/index.umd.js.flow",
-    "build-esm": "BABEL_ENV=esm babel index.js -o dist/index.esm.js && cp index.js.flow dist/index.esm.js.flow",
-    "build": "npm run build-umd && npm run build-esm",
+    "prebuild": "npm run clean && npm run lint",
+    "build": "tsc --target es2019 --outDir dist src/index.ts ",
     "pretest": "npm run build",
     "test": "karma start test/karma.config.js",
     "prepublishOnly": "npm run build",
