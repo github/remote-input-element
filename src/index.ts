@@ -53,11 +53,15 @@ class RemoteInputElement extends HTMLElement {
 async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: boolean = true) {
   const input = remoteInput.input
   if (!input) return
+
   const query = input.value
   if (checkCurrentQuery && remoteInput.currentQuery === query) return
+
   remoteInput.currentQuery = query
+
   const src = remoteInput.src
   if (!src) return
+
   const resultsContainer = document.getElementById(remoteInput.getAttribute('aria-owns') || '')
   if (!resultsContainer) return
 
