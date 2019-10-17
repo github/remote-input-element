@@ -4,18 +4,17 @@
   "description": "An input element that sends its value to a server endpoint and renders the response body.",
   "main": "dist/index.umd.js",
   "module": "dist/index.esm.js",
-  "types": "index.d.ts",
+  "types": "dist/index.d.ts",
   "license": "MIT",
   "repository": "github/remote-input-element",
   "files": [
-    "dist",
-    "index.d.ts"
+    "dist"
   ],
   "scripts": {
     "clean": "rm -rf dist",
     "lint": "github-lint",
     "prebuild": "npm run clean && npm run lint",
-    "build": "tsc --target es2019 --outDir dist src/index.ts ",
+    "build": "tsc --target es2019 --declaration --outDir dist src/index.ts ",
     "pretest": "npm run build",
     "test": "karma start test/karma.config.js",
     "prepublishOnly": "npm run build",
