@@ -1,7 +1,14 @@
 class RemoteInputElement extends HTMLElement {
   currentQuery: string | null
-  debounceInputChange: (Event) => void
-  boundFetchResults: (Event) => void
+  debounceInputChange: (event: Event) => void
+  boundFetchResults: (event: Event) => void
+
+  constructor() {
+    super()
+    this.currentQuery = null
+    this.debounceInputChange = debounce(() => fetchResults(this))
+    this.boundFetchResults = () => fetchResults(this)
+  }
 
   static get observedAttributes() {
     return ['src']
@@ -20,8 +27,6 @@ class RemoteInputElement extends HTMLElement {
     input.setAttribute('autocomplete', 'off')
     input.setAttribute('spellcheck', 'false')
 
-    this.debounceInputChange = debounce(() => fetchResults(this))
-    this.boundFetchResults = () => fetchResults(this)
     input.addEventListener('focus', this.boundFetchResults)
     input.addEventListener('change', this.boundFetchResults)
     input.addEventListener('input', this.debounceInputChange)
@@ -99,8 +104,8 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
   remoteInput.dispatchEvent(new CustomEvent('loadend'))
 }
 
-function debounce(callback) {
-  let timeout
+function debounce(callback: () => void) {
+  let timeout: number
   return function() {
     clearTimeout(timeout)
     timeout = setTimeout(() => {

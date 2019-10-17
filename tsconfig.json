@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "module": "esnext",
+    "target": "es2019",
+    "strict": true,
+    "declaration": true,
+    "outDir": "dist",
+    "removeComments": true,
+    "preserveConstEnums": true
+  },
+  "files": [
+    "src/index.ts"
+  ]
+}
