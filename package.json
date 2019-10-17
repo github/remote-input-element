@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "clean": "rm -rf dist",
-    "lint": "github-lint src/*",
+    "lint": "github-lint",
     "prebuild": "npm run clean && npm run lint",
     "build": "tsc",
     "pretest": "npm run build",
