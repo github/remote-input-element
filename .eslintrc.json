@@ -1,8 +1,7 @@
 {
   "extends": [
     "plugin:github/browser",
-    "plugin:github/es6",
-    "plugin:github/flow"
+    "plugin:github/es6"
   ],
   "parser": "babel-eslint",
   "overrides": [
