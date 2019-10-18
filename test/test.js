@@ -12,6 +12,10 @@ describe('remote-input', function() {
   })
 
   describe('after tree insertion', function() {
+    let remoteInput
+    let input
+    let results
+
     beforeEach(function() {
       document.body.innerHTML = `
         <remote-input aria-owns="results" src="/results">
@@ -19,16 +23,19 @@ describe('remote-input', function() {
         </remote-input>
         <div id="results"></div>
       `
+      remoteInput = document.querySelector('remote-input')
+      input = remoteInput.querySelector('input')
+      results = document.querySelector('#results')
     })
 
     afterEach(function() {
       document.body.innerHTML = ''
+      remoteInput = null
+      input = null
+      results = null
     })
 
     it('emits network events in order', async function() {
-      const remoteInput = document.querySelector('remote-input')
-      const input = document.querySelector('input')
-
       const events = []
       const track = event => events.push(event.type)
 
@@ -49,9 +56,6 @@ describe('remote-input', function() {
     })
 
     it('loads content', async function() {
-      const remoteInput = document.querySelector('remote-input')
-      const input = document.querySelector('input')
-      const results = document.querySelector('#results')
       assert.equal(results.innerHTML, '')
 
       const success = once(remoteInput, 'remote-input-success')
@@ -66,9 +70,6 @@ describe('remote-input', function() {
     })
 
     it('handles not ok responses', async function() {
-      const remoteInput = document.querySelector('remote-input')
-      const input = document.querySelector('input')
-      const results = document.querySelector('#results')
       remoteInput.src = '/500'
       assert.equal(results.innerHTML, '')
 
@@ -85,9 +86,6 @@ describe('remote-input', function() {
     })
 
     it('handles network error', async function() {
-      const remoteInput = document.querySelector('remote-input')
-      const input = remoteInput.querySelector('input')
-      const results = document.querySelector('#results')
       remoteInput.src = '/network-error'
       assert.equal(results.innerHTML, '')
 
@@ -104,9 +102,6 @@ describe('remote-input', function() {
     })
 
     it('repects param attribute', async function() {
-      const remoteInput = document.querySelector('remote-input')
-      const input = document.querySelector('input')
-      const results = document.querySelector('#results')
       remoteInput.setAttribute('param', 'robot')
       assert.equal(results.innerHTML, '')
 
@@ -120,10 +115,6 @@ describe('remote-input', function() {
     })
 
     it('loads content again after src is changed', async function() {
-      const remoteInput = document.querySelector('remote-input')
-      const input = document.querySelector('input')
-      const results = document.querySelector('#results')
-
       const result1 = once(remoteInput, 'remote-input-success')
       input.value = 'test'
       input.focus()
