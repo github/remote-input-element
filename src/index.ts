@@ -4,7 +4,7 @@ class RemoteInputElement extends HTMLElement {
   constructor() {
     super()
     const fetch = fetchResults.bind(null, this, true)
-    const state = {currentQuery: null, oninput: debounce(fetch), fetch}
+    const state = {currentQuery: null, oninput: debounce(fetch), fetch, controller: null}
     states.set(this, state)
   }
 
@@ -59,6 +59,13 @@ class RemoteInputElement extends HTMLElement {
   }
 }
 
+function makeAbortController() {
+  if ('AbortController' in window) {
+    return new AbortController()
+  }
+  return {signal: null, abort() {}}
+}
+
 async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: boolean) {
   const input = remoteInput.input
   if (!input) return
@@ -82,33 +89,53 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
   params.append(remoteInput.getAttribute('param') || 'q', query)
   url.search = params.toString()
 
-  remoteInput.dispatchEvent(new CustomEvent('loadstart'))
+  if (state.controller) {
+    state.controller.abort()
+  } else {
+    remoteInput.dispatchEvent(new CustomEvent('loadstart'))
+  }
+
+  state.controller = makeAbortController()
+
   remoteInput.setAttribute('loading', '')
   let response
-  let errored = false
   let html = ''
   try {
-    response = await fetch(url.toString(), {
+    response = await fetchWithNetworkEvents(remoteInput, url.toString(), {
+      signal: state.controller.signal,
       credentials: 'same-origin',
       headers: {accept: 'text/html; fragment'}
     })
     html = await response.text()
-    remoteInput.dispatchEvent(new CustomEvent('load'))
-  } catch {
-    errored = true
-    remoteInput.dispatchEvent(new CustomEvent('error'))
+    remoteInput.removeAttribute('loading')
+  } catch (error) {
+    if (error.name !== 'AbortError') {
+      remoteInput.removeAttribute('loading')
+    }
+    return
   }
-  remoteInput.removeAttribute('loading')
-  if (errored) return
 
   if (response && response.ok) {
-    remoteInput.dispatchEvent(new CustomEvent('remote-input-success', {bubbles: true}))
     resultsContainer.innerHTML = html
+    remoteInput.dispatchEvent(new CustomEvent('remote-input-success', {bubbles: true}))
   } else {
     remoteInput.dispatchEvent(new CustomEvent('remote-input-error', {bubbles: true}))
   }
+}
 
-  remoteInput.dispatchEvent(new CustomEvent('loadend'))
+async function fetchWithNetworkEvents(el: Element, url: string, options: RequestInit): Promise<Response> {
+  try {
+    const response = await fetch(url, options)
+    el.dispatchEvent(new CustomEvent('load'))
+    el.dispatchEvent(new CustomEvent('loadend'))
+    return response
+  } catch (error) {
+    if (error.name !== 'AbortError') {
+      el.dispatchEvent(new CustomEvent('error'))
+      el.dispatchEvent(new CustomEvent('loadend'))
+    }
+    throw error
+  }
 }
 
 function debounce(callback: () => void) {

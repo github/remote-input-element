@@ -25,94 +25,104 @@ describe('remote-input', function() {
       document.body.innerHTML = ''
     })
 
-    it('loads content', function(done) {
+    it('loads content', async function() {
       const remoteInput = document.querySelector('remote-input')
       const input = document.querySelector('input')
       const results = document.querySelector('#results')
       assert.equal(results.innerHTML, '')
-      let successEvent = false
-      remoteInput.addEventListener('remote-input-success', function() {
-        successEvent = true
-      })
-      remoteInput.addEventListener('loadend', function() {
-        assert.ok(successEvent, 'success event happened')
-        assert.equal(results.querySelector('ol').getAttribute('data-src'), '/results?q=test')
-        done()
-      })
+
+      const success = once(remoteInput, 'remote-input-success')
+      const loadend = once(remoteInput, 'loadend')
+
       input.value = 'test'
       input.focus()
+
+      await success
+      await loadend
+      assert.equal(results.querySelector('ol').getAttribute('data-src'), '/results?q=test')
     })
 
-    it('handles not ok responses', function(done) {
+    it('handles not ok responses', async function() {
       const remoteInput = document.querySelector('remote-input')
       const input = document.querySelector('input')
       const results = document.querySelector('#results')
       remoteInput.src = '/500'
       assert.equal(results.innerHTML, '')
-      let errorEvent = false
-      remoteInput.addEventListener('remote-input-error', function() {
-        errorEvent = true
-      })
-      remoteInput.addEventListener('loadend', function() {
-        assert.ok(errorEvent, 'error event happened')
-        assert.equal(results.innerHTML, '', 'nothing was appended')
-        done()
-      })
+
+      const error = once(remoteInput, 'remote-input-error')
+      const loadend = once(remoteInput, 'loadend')
+
       input.value = 'test'
       input.focus()
+
+      await loadend
+      await error
+
+      assert.equal(results.innerHTML, '', 'nothing was appended')
     })
 
-    it('handles network error', function(done) {
+    it('handles network error', async function() {
       const remoteInput = document.querySelector('remote-input')
-      const input = document.querySelector('input')
+      const input = remoteInput.querySelector('input')
       const results = document.querySelector('#results')
       remoteInput.src = '/network-error'
       assert.equal(results.innerHTML, '')
-      remoteInput.addEventListener('error', async function() {
-        await Promise.resolve()
-        assert.equal(results.innerHTML, '', 'nothing was appended')
-        assert.notOk(remoteInput.hasAttribute('loading'), 'loading attribute was removed')
-        done()
-      })
+
+      const result = once(remoteInput, 'error')
+
       input.value = 'test'
       input.focus()
-      assert.ok(remoteInput.hasAttribute('loading'), 'loading attribute was added')
+      assert.ok(remoteInput.hasAttribute('loading'), 'loading attribute should have been added')
+
+      await result
+      await nextTick()
+      assert.equal(results.innerHTML, '', 'nothing was appended')
+      assert.notOk(remoteInput.hasAttribute('loading'), 'loading attribute should have been removed')
     })
 
-    it('repects param attribute', function(done) {
+    it('repects param attribute', async function() {
       const remoteInput = document.querySelector('remote-input')
       const input = document.querySelector('input')
       const results = document.querySelector('#results')
       remoteInput.setAttribute('param', 'robot')
       assert.equal(results.innerHTML, '')
-      remoteInput.addEventListener('loadend', function() {
-        assert.equal(results.querySelector('ol').getAttribute('data-src'), '/results?robot=test')
-        done()
-      })
+
+      const result = once(remoteInput, 'remote-input-success')
+
       input.value = 'test'
       input.focus()
+
+      await result
+      assert.equal(results.querySelector('ol').getAttribute('data-src'), '/results?robot=test')
     })
 
-    it('loads content again after src is changed', function(done) {
+    it('loads content again after src is changed', async function() {
       const remoteInput = document.querySelector('remote-input')
       const input = document.querySelector('input')
       const results = document.querySelector('#results')
 
-      function listenOnce(cb) {
-        remoteInput.addEventListener('loadend', cb, {once: true})
-      }
-      listenOnce(function() {
-        assert.equal(results.querySelector('ol').getAttribute('data-src'), '/results?q=test')
-
-        listenOnce(function() {
-          assert.equal(results.querySelector('ol').getAttribute('data-src'), '/srcChanged?q=test')
-          done()
-        })
-
-        remoteInput.src = '/srcChanged'
-      })
+      const result1 = once(remoteInput, 'remote-input-success')
       input.value = 'test'
       input.focus()
+
+      await result1
+      assert.equal(results.querySelector('ol').getAttribute('data-src'), '/results?q=test')
+
+      const result2 = once(remoteInput, 'remote-input-success')
+      remoteInput.src = '/srcChanged'
+
+      await result2
+      assert.equal(results.querySelector('ol').getAttribute('data-src'), '/srcChanged?q=test')
     })
   })
 })
+
+function nextTick() {
+  return Promise.resolve()
+}
+
+function once(element, eventName) {
+  return new Promise(resolve => {
+    element.addEventListener(eventName, resolve, {once: true})
+  })
+}
