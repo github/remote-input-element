@@ -93,11 +93,11 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
     state.controller.abort()
   } else {
     remoteInput.dispatchEvent(new CustomEvent('loadstart'))
+    remoteInput.setAttribute('loading', '')
   }
 
   state.controller = makeAbortController()
 
-  remoteInput.setAttribute('loading', '')
   let response
   let html = ''
   try {
