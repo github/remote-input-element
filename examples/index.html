@@ -11,16 +11,16 @@
     function fakeFetch(url) {
       const urlObj = new URL(url)
       let html = ''
-      if (url.pathname === '/results') {
+      if (urlObj.pathname === '/results') {
         const doc = document.createElement('div')
         doc.innerHTML = `<li>Hubot</li><li>BB-8</li><li>Wall-E</li><li>Bender</li>`
-        const q = url.searchParams.get('q')
+        const q = urlObj.searchParams.get('q')
         for (const el of doc.querySelectorAll('li')) {
           if (q !== '' && !el.textContent.toLowerCase().match(q.toLowerCase())) el.remove()
         }
         html = doc.innerHTML
-      } else if (url.pathname === '/marquee') {
-        html = `<marquee>${url.searchParams.get('q') || '🐈 Nothing to preview 🐈'}</marquee>`
+      } else if (urlObj.pathname === '/marquee') {
+        html = `<marquee>${urlObj.searchParams.get('q') || '🐈 Nothing to preview 🐈'}</marquee>`
       }
       const promiseHTML = new Promise(resolve => resolve(html))
       return new Promise(resolve => resolve({ok: true, text: () => promiseHTML}))
