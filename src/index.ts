@@ -3,7 +3,7 @@ const states = new WeakMap()
 class RemoteInputElement extends HTMLElement {
   constructor() {
     super()
-    const fetch = fetchResults.bind(this, this, true)
+    const fetch = fetchResults.bind(null, this, true)
     const state = {currentQuery: null, oninput: debounce(fetch), fetch}
     states.set(this, state)
   }
