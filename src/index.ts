@@ -1,9 +1,14 @@
-/* @flow strict */
-
 class RemoteInputElement extends HTMLElement {
-  currentQuery: ?string
-  debounceInputChange: Event => void
-  boundFetchResults: Event => mixed
+  currentQuery: string | null
+  debounceInputChange: (event: Event) => void
+  boundFetchResults: (event: Event) => void
+
+  constructor() {
+    super()
+    this.currentQuery = null
+    this.debounceInputChange = debounce(() => fetchResults(this))
+    this.boundFetchResults = () => fetchResults(this)
+  }
 
   static get observedAttributes() {
     return ['src']
@@ -22,8 +27,6 @@ class RemoteInputElement extends HTMLElement {
     input.setAttribute('autocomplete', 'off')
     input.setAttribute('spellcheck', 'false')
 
-    this.debounceInputChange = debounce(() => fetchResults(this))
-    this.boundFetchResults = () => fetchResults(this)
     input.addEventListener('focus', this.boundFetchResults)
     input.addEventListener('change', this.boundFetchResults)
     input.addEventListener('input', this.debounceInputChange)
@@ -38,7 +41,7 @@ class RemoteInputElement extends HTMLElement {
     input.removeEventListener('input', this.debounceInputChange)
   }
 
-  get input(): ?(HTMLInputElement | HTMLTextAreaElement) {
+  get input(): HTMLInputElement | HTMLTextAreaElement | null {
     const input = this.querySelector('input, textarea')
     return input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement ? input : null
   }
@@ -55,11 +58,15 @@ class RemoteInputElement extends HTMLElement {
 async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: boolean = true) {
   const input = remoteInput.input
   if (!input) return
+
   const query = input.value
   if (checkCurrentQuery && remoteInput.currentQuery === query) return
+
   remoteInput.currentQuery = query
+
   const src = remoteInput.src
   if (!src) return
+
   const resultsContainer = document.getElementById(remoteInput.getAttribute('aria-owns') || '')
   if (!resultsContainer) return
 
@@ -74,7 +81,7 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
   let errored = false
   let html = ''
   try {
-    response = await fetch(url, {
+    response = await fetch(url.toString(), {
       credentials: 'same-origin',
       headers: {accept: 'text/html; fragment'}
     })
@@ -97,8 +104,8 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
   remoteInput.dispatchEvent(new CustomEvent('loadend'))
 }
 
-function debounce(callback) {
-  let timeout
+function debounce(callback: () => void) {
+  let timeout: number
   return function() {
     clearTimeout(timeout)
     timeout = setTimeout(() => {
@@ -109,6 +116,12 @@ function debounce(callback) {
 }
 
 export default RemoteInputElement
+
+declare global {
+  interface Window {
+    RemoteInputElement: typeof RemoteInputElement
+  }
+}
 
 if (!window.customElements.get('remote-input')) {
   window.RemoteInputElement = RemoteInputElement

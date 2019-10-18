@@ -1,9 +1,0 @@
-/* @flow strict */
-
-declare module '@github/remote-input-element' {
-  declare export default class RemoteInputElement extends HTMLElement {
-    get input(): ?(HTMLInputElement | HTMLTextAreaElement);
-    get src(): string;
-    set src(url: string): void;
-  }
-}
