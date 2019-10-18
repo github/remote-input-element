@@ -1,13 +1,11 @@
-class RemoteInputElement extends HTMLElement {
-  currentQuery: string | null
-  debounceInputChange: (event: Event) => void
-  boundFetchResults: (event: Event) => void
+const states = new WeakMap()
 
+class RemoteInputElement extends HTMLElement {
   constructor() {
     super()
-    this.currentQuery = null
-    this.debounceInputChange = debounce(() => fetchResults(this))
-    this.boundFetchResults = () => fetchResults(this)
+    const fetch = fetchResults.bind(null, this, true)
+    const state = {currentQuery: null, oninput: debounce(fetch), fetch}
+    states.set(this, state)
   }
 
   static get observedAttributes() {
@@ -27,18 +25,24 @@ class RemoteInputElement extends HTMLElement {
     input.setAttribute('autocomplete', 'off')
     input.setAttribute('spellcheck', 'false')
 
-    input.addEventListener('focus', this.boundFetchResults)
-    input.addEventListener('change', this.boundFetchResults)
-    input.addEventListener('input', this.debounceInputChange)
+    const state = states.get(this)
+    if (!state) return
+
+    input.addEventListener('focus', state.fetch)
+    input.addEventListener('change', state.fetch)
+    input.addEventListener('input', state.oninput)
   }
 
   disconnectedCallback() {
     const input = this.input
     if (!input) return
 
-    input.removeEventListener('focus', this.boundFetchResults)
-    input.removeEventListener('change', this.boundFetchResults)
-    input.removeEventListener('input', this.debounceInputChange)
+    const state = states.get(this)
+    if (!state) return
+
+    input.removeEventListener('focus', state.fetch)
+    input.removeEventListener('change', state.fetch)
+    input.removeEventListener('input', state.oninput)
   }
 
   get input(): HTMLInputElement | HTMLTextAreaElement | null {
@@ -55,14 +59,17 @@ class RemoteInputElement extends HTMLElement {
   }
 }
 
-async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: boolean = true) {
+async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: boolean) {
   const input = remoteInput.input
   if (!input) return
 
-  const query = input.value
-  if (checkCurrentQuery && remoteInput.currentQuery === query) return
+  const state = states.get(remoteInput)
+  if (!state) return
 
-  remoteInput.currentQuery = query
+  const query = input.value
+  if (checkCurrentQuery && state.currentQuery === query) return
+
+  state.currentQuery = query
 
   const src = remoteInput.src
   if (!src) return
