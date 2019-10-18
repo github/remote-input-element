@@ -48,8 +48,7 @@ describe('remote-input', function() {
         once(remoteInput, 'load'),
         once(remoteInput, 'loadend')
       ])
-      input.value = 'test'
-      input.focus()
+      changeValue(input, 'test')
       await completed
 
       assert.deepEqual(['loadstart', 'load', 'loadend'], events)
@@ -61,8 +60,7 @@ describe('remote-input', function() {
       const success = once(remoteInput, 'remote-input-success')
       const loadend = once(remoteInput, 'loadend')
 
-      input.value = 'test'
-      input.focus()
+      changeValue(input, 'test')
 
       await success
       await loadend
@@ -76,8 +74,7 @@ describe('remote-input', function() {
       const error = once(remoteInput, 'remote-input-error')
       const loadend = once(remoteInput, 'loadend')
 
-      input.value = 'test'
-      input.focus()
+      changeValue(input, 'test')
 
       await loadend
       await error
@@ -91,8 +88,7 @@ describe('remote-input', function() {
 
       const result = once(remoteInput, 'error')
 
-      input.value = 'test'
-      input.focus()
+      changeValue(input, 'test')
       assert.ok(remoteInput.hasAttribute('loading'), 'loading attribute should have been added')
 
       await result
@@ -107,8 +103,7 @@ describe('remote-input', function() {
 
       const result = once(remoteInput, 'remote-input-success')
 
-      input.value = 'test'
-      input.focus()
+      changeValue(input, 'test')
 
       await result
       assert.equal(results.querySelector('ol').getAttribute('data-src'), '/results?robot=test')
@@ -116,8 +111,7 @@ describe('remote-input', function() {
 
     it('loads content again after src is changed', async function() {
       const result1 = once(remoteInput, 'remote-input-success')
-      input.value = 'test'
-      input.focus()
+      changeValue(input, 'test')
 
       await result1
       assert.equal(results.querySelector('ol').getAttribute('data-src'), '/results?q=test')
@@ -130,6 +124,11 @@ describe('remote-input', function() {
     })
   })
 })
+
+function changeValue(input, value) {
+  input.value = value
+  input.dispatchEvent(new Event('change'))
+}
 
 function nextTick() {
   return Promise.resolve()
