@@ -25,6 +25,29 @@ describe('remote-input', function() {
       document.body.innerHTML = ''
     })
 
+    it('emits network events in order', async function() {
+      const remoteInput = document.querySelector('remote-input')
+      const input = document.querySelector('input')
+
+      const events = []
+      const track = event => events.push(event.type)
+
+      remoteInput.addEventListener('loadstart', track)
+      remoteInput.addEventListener('load', track)
+      remoteInput.addEventListener('loadend', track)
+
+      const completed = Promise.all([
+        once(remoteInput, 'loadstart'),
+        once(remoteInput, 'load'),
+        once(remoteInput, 'loadend')
+      ])
+      input.value = 'test'
+      input.focus()
+      await completed
+
+      assert.deepEqual(['loadstart', 'load', 'loadend'], events)
+    })
+
     it('loads content', async function() {
       const remoteInput = document.querySelector('remote-input')
       const input = document.querySelector('input')
