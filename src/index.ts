@@ -108,9 +108,11 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
     })
     html = await response.text()
     remoteInput.removeAttribute('loading')
+    state.controller = null
   } catch (error) {
     if (error.name !== 'AbortError') {
       remoteInput.removeAttribute('loading')
+      state.controller = null
     }
     return
   }
