@@ -49,7 +49,7 @@ remote-input[loading] .loading-icon { display: inline; }
 - `load` - The network request completed successfully.
 - `error` - The network request failed.
 - `loadend` - The network request has completed.
-- `remote-input-success` – Received a successful response (status code 200-299). Bubbles.
+- `remote-input-success` – Received a successful response (status code 200-299), and response HTML has been set. Bubbles.
 - `remote-input-error` – Received a not successful response. Bubbles.
 
 ## Browser support
