@@ -49,6 +49,7 @@ remote-input[loading] .loading-icon { display: inline; }
 - `load` - The network request completed successfully.
 - `error` - The network request failed.
 - `loadend` - The network request has completed.
+  - Note: You should not use this event if you need to change something based on the HTML in the response as the DOM will not be updated at this point. Use `remote-input-success` instead. 
 - `remote-input-success` – Received a successful response (status code 200-299). Bubbles.
 - `remote-input-error` – Received a not successful response. Bubbles.
 
