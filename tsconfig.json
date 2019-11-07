@@ -2,6 +2,7 @@
   "compilerOptions": {
     "module": "esnext",
     "target": "es5",
+    "lib": ["es2018", "dom"],
     "strict": true,
     "declaration": true,
     "outDir": "dist",
