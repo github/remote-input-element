@@ -117,10 +117,13 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
     return
   }
 
+  let errorHtml
   if (response && response.ok) {
     resultsContainer.innerHTML = html
     remoteInput.dispatchEvent(new CustomEvent('remote-input-success', {bubbles: true}))
   } else {
+    errorHtml = remoteInput.getAttribute('error')
+    if (errorHtml !== null) resultsContainer.innerHTML = errorHtml
     remoteInput.dispatchEvent(new CustomEvent('remote-input-error', {bubbles: true}))
   }
 }

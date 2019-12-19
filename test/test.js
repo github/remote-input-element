@@ -97,7 +97,7 @@ describe('remote-input', function() {
       assert.notOk(remoteInput.hasAttribute('loading'), 'loading attribute should have been removed')
     })
 
-    it('repects param attribute', async function() {
+    it('respects param attribute', async function() {
       remoteInput.setAttribute('param', 'robot')
       assert.equal(results.innerHTML, '')
 
@@ -107,6 +107,22 @@ describe('remote-input', function() {
 
       await result
       assert.equal(results.querySelector('ol').getAttribute('data-src'), '/results?robot=test')
+    })
+
+    it('respects error attribute', async function() {
+      remoteInput.src = '/500'
+      remoteInput.setAttribute('error', '<div>whoops</div>')
+      assert.equal(results.innerHTML, '')
+
+      const error = once(remoteInput, 'remote-input-error')
+      const loadend = once(remoteInput, 'loadend')
+
+      changeValue(input, 'test')
+
+      await loadend
+      await error
+
+      assert.equal(results.innerHTML, '<div>whoops</div>', 'error was appended')
     })
 
     it('loads content again after src is changed', async function() {

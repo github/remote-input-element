@@ -34,6 +34,19 @@ The parameter name (`q`) is customizable with the `[param]` attribute:
 <div id="md-preview"></div>
 ```
 
+### Styling error state
+
+The error UI is customizable with the `[error]` attribute:
+
+
+```html
+<!-- Live preview of Markdown -->
+<remote-input src="/preview" aria-owns="md-preview" error="<div>Whoops</div>">
+  <textarea></textarea>
+</remote-input>
+<div id="md-preview"></div>
+```
+
 ### Styling loading state
 
 A boolean `[loading]` attribute is added to `<remote-input>` when a network request begins and removed when it ends.
