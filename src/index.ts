@@ -63,6 +63,8 @@ function makeAbortController() {
   if ('AbortController' in window) {
     return new AbortController()
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   return {signal: null, abort() {}}
 }
 
