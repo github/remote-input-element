@@ -106,7 +106,7 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
     response = await fetchWithNetworkEvents(remoteInput, url.toString(), {
       signal: state.controller.signal,
       credentials: 'same-origin',
-      headers: {accept: 'text/html; fragment, text/fragment+html'}
+      headers: {accept: 'text/fragment+html'}
     })
     html = await response.text()
     remoteInput.removeAttribute('loading')
