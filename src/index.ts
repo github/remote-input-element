@@ -63,6 +63,8 @@ function makeAbortController() {
   if ('AbortController' in window) {
     return new AbortController()
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   return {signal: null, abort() {}}
 }
 
@@ -104,7 +106,7 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
     response = await fetchWithNetworkEvents(remoteInput, url.toString(), {
       signal: state.controller.signal,
       credentials: 'same-origin',
-      headers: {accept: 'text/html; fragment'}
+      headers: {accept: 'text/fragment+html'}
     })
     html = await response.text()
     remoteInput.removeAttribute('loading')
