@@ -25,7 +25,13 @@ function reply(request, response, next) {
 module.exports = function(config) {
   config.set({
     frameworks: ['mocha', 'chai'],
-    files: ['bootstrap.js', '../dist/umd/index.js', 'test.js'],
+    files: [
+      {
+        pattern: '../dist/index.js',
+        type: 'module'
+      },
+      'test.js'
+    ],
     reporters: ['mocha'],
     port: 9876,
     colors: true,
