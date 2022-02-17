@@ -143,7 +143,7 @@ async function fetchWithNetworkEvents(el: Element, url: string, options: Request
 }
 
 function debounce(callback: () => void) {
-  let timeout: number
+  let timeout: ReturnType<typeof setTimeout>
   return function() {
     clearTimeout(timeout)
     timeout = setTimeout(() => {
