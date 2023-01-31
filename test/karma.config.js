@@ -25,15 +25,15 @@ function reply(request, response, next) {
   }
   next()
 }
-module.exports = function(config) {
+module.exports = function (config) {
   config.set({
     frameworks: ['mocha', 'chai'],
     files: [
       {
         pattern: '../dist/index.js',
-        type: 'module'
+        type: 'module',
       },
-      'test.js'
+      'test.js',
     ],
     reporters: ['mocha'],
     port: 9876,
@@ -47,8 +47,8 @@ module.exports = function(config) {
     plugins: [
       'karma-*',
       {
-        'middleware:request': ['value', reply]
-      }
-    ]
+        'middleware:request': ['value', reply],
+      },
+    ],
   })
 }

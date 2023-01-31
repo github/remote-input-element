@@ -106,7 +106,7 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
     response = await fetchWithNetworkEvents(remoteInput, url.toString(), {
       signal: state.controller.signal,
       credentials: 'same-origin',
-      headers: {accept: 'text/fragment+html'}
+      headers: {accept: 'text/fragment+html'},
     })
     html = await response.text()
     remoteInput.removeAttribute('loading')
@@ -144,7 +144,7 @@ async function fetchWithNetworkEvents(el: Element, url: string, options: Request
 
 function debounce(callback: () => void) {
   let timeout: ReturnType<typeof setTimeout>
-  return function() {
+  return function () {
     clearTimeout(timeout)
     timeout = setTimeout(() => {
       clearTimeout(timeout)
