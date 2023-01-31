@@ -1,8 +1,19 @@
 {
-  "env": {
-    "mocha": true
-  },
-  "globals": {
-    "assert": true
-  }
+  "extends": [
+    "plugin:github/browser",
+    "plugin:github/recommended",
+    "plugin:github/typescript"
+  ],
+  "overrides": [
+    {
+      "files": "test/**/*.js",
+      "excludedFiles": "test/karma.config.js",
+      "env": {
+        "mocha": true
+      },
+      "globals": {
+        "assert": true
+      }
+    }
+  ]
 }
