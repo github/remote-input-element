@@ -1,22 +1,25 @@
-describe('remote-input', function () {
-  describe('element creation', function () {
-    it('creates from document.createElement', function () {
+import {assert} from '@open-wc/testing'
+import '../src/index.ts'
+
+suite('remote-input', function () {
+  suite('element creation', function () {
+    test('creates from document.createElement', function () {
       const el = document.createElement('remote-input')
       assert.equal('REMOTE-INPUT', el.nodeName)
     })
 
-    it('creates from constructor', function () {
+    test('creates from constructor', function () {
       const el = new window.RemoteInputElement()
       assert.equal('REMOTE-INPUT', el.nodeName)
     })
   })
 
-  describe('after tree insertion', function () {
+  suite('after tree insertion', function () {
     let remoteInput
     let input
     let results
 
-    beforeEach(function () {
+    setup(function () {
       document.body.innerHTML = `
         <remote-input aria-owns="results" src="/results">
           <input>
@@ -28,14 +31,14 @@ describe('remote-input', function () {
       results = document.querySelector('#results')
     })
 
-    afterEach(function () {
+    teardown(function () {
       document.body.innerHTML = ''
       remoteInput = null
       input = null
       results = null
     })
 
-    it('emits network events in order', async function () {
+    test('emits network events in order', async function () {
       const events = []
       const track = event => events.push(event.type)
 
@@ -54,7 +57,7 @@ describe('remote-input', function () {
       assert.deepEqual(['loadstart', 'load', 'loadend'], events)
     })
 
-    it('loads content', async function () {
+    test('loads content', async function () {
       assert.equal(results.innerHTML, '')
 
       const success = once(remoteInput, 'remote-input-success')
@@ -67,7 +70,7 @@ describe('remote-input', function () {
       assert.equal(results.querySelector('ol').getAttribute('data-src'), '/results?q=test')
     })
 
-    it('handles not ok responses', async function () {
+    test('handles not ok responses', async function () {
       remoteInput.src = '/500'
       assert.equal(results.innerHTML, '')
 
@@ -82,7 +85,7 @@ describe('remote-input', function () {
       assert.equal(results.innerHTML, '', 'nothing was appended')
     })
 
-    it('handles network error', async function () {
+    test('handles network error', async function () {
       remoteInput.src = '/network-error'
       assert.equal(results.innerHTML, '')
 
@@ -97,7 +100,7 @@ describe('remote-input', function () {
       assert.notOk(remoteInput.hasAttribute('loading'), 'loading attribute should have been removed')
     })
 
-    it('repects param attribute', async function () {
+    test('repects param attribute', async function () {
       remoteInput.setAttribute('param', 'robot')
       assert.equal(results.innerHTML, '')
 
@@ -109,7 +112,7 @@ describe('remote-input', function () {
       assert.equal(results.querySelector('ol').getAttribute('data-src'), '/results?robot=test')
     })
 
-    it('loads content again after src is changed', async function () {
+    test('loads content again after src is changed', async function () {
       const result1 = once(remoteInput, 'remote-input-success')
       changeValue(input, 'test')
 

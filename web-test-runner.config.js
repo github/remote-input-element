@@ -3,8 +3,21 @@ import {playwrightLauncher} from '@web/test-runner-playwright'
 const browser = product =>
   playwrightLauncher({
     product,
-    createBrowserContext({browser: context}) {
-      return context.newContext({timezoneId: 'Asia/Dubai'})
+    createPage: async ({context}) => {
+      const page = await context.newPage()
+      await page.route('**/results*', route =>
+        route.fulfill({
+          // eslint-disable-next-line github/unescaped-html-literal
+          body: `<ol data-src="${route.request().url().pathname() + route.request().url().search()}">
+              <li>item</li>
+              <li>item</li>
+              <li>item</li>
+            </ol>`,
+        }),
+      )
+      await page.route('**/500*', route => route.fulfill({status: 500}))
+      await page.route('**/network-error*', route => route.abort())
+      return page
     },
   })
 
