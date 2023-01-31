@@ -1,4 +1,4 @@
-// eslint-disable-next-line no-undef
+// eslint-disable-next-line
 process.env.CHROME_BIN = require('chromium').path
 
 function reply(request, response, next) {
