@@ -120,6 +120,7 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
   }
 
   if (response && response.ok) {
+    // eslint-disable-next-line github/no-inner-html
     resultsContainer.innerHTML = html
     remoteInput.dispatchEvent(new CustomEvent('remote-input-success', {bubbles: true}))
   } else {
