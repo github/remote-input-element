@@ -112,7 +112,7 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
     remoteInput.removeAttribute('loading')
     state.controller = null
   } catch (error) {
-    if (error.name !== 'AbortError') {
+    if (error instanceof Error && error.name !== 'AbortError') {
       remoteInput.removeAttribute('loading')
       state.controller = null
     }
@@ -134,7 +134,7 @@ async function fetchWithNetworkEvents(el: Element, url: string, options: Request
     el.dispatchEvent(new CustomEvent('loadend'))
     return response
   } catch (error) {
-    if (error.name !== 'AbortError') {
+    if (error instanceof Error && error.name !== 'AbortError') {
       el.dispatchEvent(new CustomEvent('error'))
       el.dispatchEvent(new CustomEvent('loadend'))
     }
