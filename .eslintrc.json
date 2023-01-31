@@ -1,24 +1,33 @@
 {
-  "extends": [
-    "plugin:github/browser",
-    "plugin:github/es6",
-    "plugin:github/typescript"
-  ],
-  "globals": {
-    "RemoteInputElement": "readable"
+  "root": true,
+  "extends": ["plugin:github/browser", "plugin:github/recommended", "plugin:github/typescript"],
+  "rules": {
+    "import/extensions": ["error", "always"],
+    "import/no-unresolved": "off"
   },
   "overrides": [
     {
-      "files": "*.js",
-      "parser": "espree",
-      "parserOptions": {
-        "ecmaVersion": "2020"
+      "files": "src/*-define.ts",
+      "rules": {
+        "@typescript-eslint/no-namespace": "off"
       }
     },
     {
       "files": "test/**/*.js",
       "rules": {
-        "github/unescaped-html-literal": "off"
+        "github/unescaped-html-literal": "off",
+        "github/no-inner-html": "off",
+        "i18n-text/no-en": "off"
+      }
+    },
+    {
+      "files": "test/**/*.js",
+      "excludedFiles": "test/karma.config.cjs",
+      "env": {
+        "mocha": true
+      },
+      "globals": {
+        "assert": true
       }
     }
   ]

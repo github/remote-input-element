@@ -106,13 +106,13 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
     response = await fetchWithNetworkEvents(remoteInput, url.toString(), {
       signal: state.controller.signal,
       credentials: 'same-origin',
-      headers: {accept: 'text/fragment+html'}
+      headers: {accept: 'text/fragment+html'},
     })
     html = await response.text()
     remoteInput.removeAttribute('loading')
     state.controller = null
   } catch (error) {
-    if (error.name !== 'AbortError') {
+    if (error instanceof Error && error.name !== 'AbortError') {
       remoteInput.removeAttribute('loading')
       state.controller = null
     }
@@ -120,6 +120,7 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
   }
 
   if (response && response.ok) {
+    // eslint-disable-next-line github/no-inner-html
     resultsContainer.innerHTML = html
     remoteInput.dispatchEvent(new CustomEvent('remote-input-success', {bubbles: true}))
   } else {
@@ -134,7 +135,7 @@ async function fetchWithNetworkEvents(el: Element, url: string, options: Request
     el.dispatchEvent(new CustomEvent('loadend'))
     return response
   } catch (error) {
-    if (error.name !== 'AbortError') {
+    if (error instanceof Error && error.name !== 'AbortError') {
       el.dispatchEvent(new CustomEvent('error'))
       el.dispatchEvent(new CustomEvent('loadend'))
     }
@@ -144,7 +145,7 @@ async function fetchWithNetworkEvents(el: Element, url: string, options: Request
 
 function debounce(callback: () => void) {
   let timeout: ReturnType<typeof setTimeout>
-  return function() {
+  return function () {
     clearTimeout(timeout)
     timeout = setTimeout(() => {
       clearTimeout(timeout)
