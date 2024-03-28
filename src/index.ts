@@ -3,8 +3,8 @@ const states = new WeakMap()
 class RemoteInputElement extends HTMLElement {
   constructor() {
     super()
-    const fetch = fetchResults.bind(null, this, true)
-    const state = {currentQuery: null, oninput: debounce(fetch), fetch, controller: null}
+    const fetch = (e: Event) => fetchResults.bind(null, this, true, e)
+    const state = {currentQuery: null, oninput: (e: Event) => debounce(fetch(e)), fetch, controller: null}
     states.set(this, state)
   }
 
@@ -68,7 +68,7 @@ function makeAbortController() {
   return {signal: null, abort() {}}
 }
 
-async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: boolean) {
+async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: boolean, event?: Event) {
   const input = remoteInput.input
   if (!input) return
 
@@ -121,7 +121,7 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
 
   if (response && response.ok) {
     resultsContainer.innerHTML = html
-    remoteInput.dispatchEvent(new CustomEvent('remote-input-success', {bubbles: true}))
+    remoteInput.dispatchEvent(new CustomEvent('remote-input-success', {bubbles: true, detail: { "eventType": event? event.type : undefined}}))
   } else {
     remoteInput.dispatchEvent(new CustomEvent('remote-input-error', {bubbles: true}))
   }
