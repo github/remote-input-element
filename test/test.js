@@ -161,7 +161,7 @@ describe('remote-input', function () {
 
 function changeValue(input, value) {
   input.value = value
-  input.dispatchEvent(new Event('focus'))
+  input.dispatchEvent(new Event('change'))
 }
 
 function nextTick() {
