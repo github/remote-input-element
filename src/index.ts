@@ -4,7 +4,7 @@ class RemoteInputElement extends HTMLElement {
   constructor() {
     super()
     const fetch = (e: Event) => fetchResults.bind(null, this, true, e)
-    const state = {currentQuery: null, oninput: (e: Event) => debounce(fetch(e)), fetch, controller: null}
+    const state = {currentQuery: null, oninput: debounce((e: Event) => fetch(e)), fetch, controller: null}
     states.set(this, state)
   }
 
@@ -142,13 +142,13 @@ async function fetchWithNetworkEvents(el: Element, url: string, options: Request
   }
 }
 
-function debounce(callback: () => void) {
+function debounce<T>(callback: (args: T) => void) {
   let timeout: ReturnType<typeof setTimeout>
-  return function() {
+  return function(args: T) {
     clearTimeout(timeout)
     timeout = setTimeout(() => {
       clearTimeout(timeout)
-      callback()
+      callback(args)
     }, 300)
   }
 }
