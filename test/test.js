@@ -127,7 +127,6 @@ describe('remote-input', function() {
       const result = new Promise(resolve => {
         remoteInput.addEventListener('remote-input-success', (event) => {
           resolve(event)
-  input.dispatchEvent(new Event('change'))
       })
       changeValue(input, 'test')
 
@@ -141,7 +140,7 @@ describe('remote-input', function() {
 
 function changeValue(input, value) {
   input.value = value
-  input.dispatchEvent(new Event('focus'))
+  input.dispatchEvent(new Event('change'))
 }
 
 function nextTick() {
