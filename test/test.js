@@ -127,7 +127,7 @@ describe('remote-input', function() {
       const result = new Promise(resolve => {
         remoteInput.addEventListener('remote-input-success', (event) => {
           resolve(event)
-        }, {once: true})
+  input.dispatchEvent(new Event('change'))
       })
       changeValue(input, 'test')
 
