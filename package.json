@@ -12,6 +12,7 @@
   ],
   "scripts": {
     "clean": "rm -rf dist",
+    "lint": "github-lint",
     "prebuild": "npm run clean",
     "build": "tsc --outDir dist/umd --module umd && tsc",
     "pretest": "npm run build",
@@ -22,6 +23,8 @@
   "devDependencies": {
     "chai": "^4.1.2",
     "chromium": "^3.0.3",
+    "eslint": "^6.8.0",
+    "eslint-plugin-github": "^3.4.1",
     "karma": "^6.4.3",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^3.2.0",
