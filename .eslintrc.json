@@ -1,25 +1,27 @@
 {
+  "plugins": ["github"],
   "extends": [
-    "plugin:github/browser",
-    "plugin:github/es6",
-    "plugin:github/typescript"
+    "plugin:github/recommended"
   ],
+  "parser": "@typescript-eslint/parser",
   "globals": {
-    "RemoteInputElement": "readable"
+    "RemoteInputElement": "readonly",
+    "RequestInit": true
   },
-  "overrides": [
-    {
-      "files": "*.js",
-      "parser": "espree",
-      "parserOptions": {
-        "ecmaVersion": "2020"
+  "env": {
+    "browser": true,
+    "commonjs": true,
+    "es6": true,
+    "jest": true,
+    "node": true
+  },
+  "rules": {
+    "no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
       }
-    },
-    {
-      "files": "test/**/*.js",
-      "rules": {
-        "github/unescaped-html-literal": "off"
-      }
-    }
-  ]
+    ]
+  }
 }
