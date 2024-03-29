@@ -113,7 +113,6 @@ describe('remote-input', function() {
       const result1 = once(remoteInput, 'remote-input-success')
       changeValue(input, 'test')
       
-
       await result1
       assert.equal(results.querySelector('ol').getAttribute('data-src'), '/results?q=test')
 
