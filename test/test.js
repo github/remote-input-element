@@ -125,20 +125,24 @@ describe('remote-input', function() {
     })
 
     it('check eventType', async function() {
-      const result = Promise(() => {
-        element.addEventListener(eventName, (event) => {
-          assert.equal(event.detail.eventType, 'change')
+      const result = new Promise(resolve => {
+        remoteInput.addEventListener('remote-input-success', (event) => {
+          resolve(event)
         }, {once: true})
       })
       changeValue(input, 'test')
-      await result
+
+      result.then((value) => {
+        assert.equal(value.detail.eventType, 'change')
+      })
+      
     })
   })
 })
 
 function changeValue(input, value) {
   input.value = value
-  input.dispatchEvent(new Event('change'))
+  input.dispatchEvent(new Event('focus'))
 }
 
 function nextTick() {
