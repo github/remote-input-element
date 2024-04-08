@@ -4,7 +4,12 @@ class RemoteInputElement extends HTMLElement {
   constructor() {
     super()
     const fetch = fetchResults.bind(null, this, true)
-    const state = {currentQuery: null, oninput: debounce((e: Event) => fetch(e)), fetch, controller: null}
+    const state = {
+      currentQuery: null,
+      oninput: debounce<Event>((e) => fetch(e)),
+      fetch,
+      controller: null
+    }
     states.set(this, state)
   }
 
@@ -47,7 +52,10 @@ class RemoteInputElement extends HTMLElement {
 
   get input(): HTMLInputElement | HTMLTextAreaElement | null {
     const input = this.querySelector('input, textarea')
-    return input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement ? input : null
+    return input instanceof HTMLInputElement ||
+      input instanceof HTMLTextAreaElement
+      ? input
+      : null
   }
 
   get src(): string {
@@ -64,11 +72,14 @@ function makeAbortController() {
     return new AbortController()
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  return {signal: null, abort() {}}
+  return { signal: null, abort() {} }
 }
 
-async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: boolean, event?: Event) {
+async function fetchResults(
+  remoteInput: RemoteInputElement,
+  checkCurrentQuery: boolean,
+  event?: Event
+) {
   const input = remoteInput.input
   if (!input) return
 
@@ -83,7 +94,9 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
   const src = remoteInput.src
   if (!src) return
 
-  const resultsContainer = document.getElementById(remoteInput.getAttribute('aria-owns') || '')
+  const resultsContainer = document.getElementById(
+    remoteInput.getAttribute('aria-owns') || ''
+  )
   if (!resultsContainer) return
 
   const url = new URL(src, window.location.href)
@@ -106,7 +119,7 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
     response = await fetchWithNetworkEvents(remoteInput, url.toString(), {
       signal: state.controller.signal,
       credentials: 'same-origin',
-      headers: {accept: 'text/fragment+html'}
+      headers: { accept: 'text/fragment+html' }
     })
     html = await response.text()
     remoteInput.removeAttribute('loading')
@@ -121,13 +134,24 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
 
   if (response && response.ok) {
     resultsContainer.innerHTML = html
-    remoteInput.dispatchEvent(new CustomEvent('remote-input-success', {bubbles: true, detail: { "eventType": event? event.type : undefined}}))
+    remoteInput.dispatchEvent(
+      new CustomEvent('remote-input-success', {
+        bubbles: true,
+        detail: { eventType: event ? event.type : undefined }
+      })
+    )
   } else {
-    remoteInput.dispatchEvent(new CustomEvent('remote-input-error', {bubbles: true}))
+    remoteInput.dispatchEvent(
+      new CustomEvent('remote-input-error', { bubbles: true })
+    )
   }
 }
 
-async function fetchWithNetworkEvents(el: Element, url: string, options: RequestInit): Promise<Response> {
+async function fetchWithNetworkEvents(
+  el: Element,
+  url: string,
+  options: RequestInit
+): Promise<Response> {
   try {
     const response = await fetch(url, options)
     el.dispatchEvent(new CustomEvent('load'))
@@ -142,9 +166,9 @@ async function fetchWithNetworkEvents(el: Element, url: string, options: Request
   }
 }
 
-function debounce<T>(callback: (args: T) => void) {
+function debounce<T>(callback: (_args: T) => void) {
   let timeout: ReturnType<typeof setTimeout>
-  return function(args: T) {
+  return function (args: T) {
     clearTimeout(timeout)
     timeout = setTimeout(() => {
       clearTimeout(timeout)
@@ -156,6 +180,7 @@ function debounce<T>(callback: (args: T) => void) {
 export default RemoteInputElement
 
 declare global {
+  // eslint-disable-next-line no-unused-vars
   interface Window {
     RemoteInputElement: typeof RemoteInputElement
   }

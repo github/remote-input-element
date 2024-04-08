@@ -1,22 +1,22 @@
-describe('remote-input', function() {
-  describe('element creation', function() {
-    it('creates from document.createElement', function() {
+describe('remote-input', function () {
+  describe('element creation', function () {
+    it('creates from document.createElement', function () {
       const el = document.createElement('remote-input')
       assert.equal('REMOTE-INPUT', el.nodeName)
     })
 
-    it('creates from constructor', function() {
+    it('creates from constructor', function () {
       const el = new window.RemoteInputElement()
       assert.equal('REMOTE-INPUT', el.nodeName)
     })
   })
 
-  describe('after tree insertion', function() {
+  describe('after tree insertion', function () {
     let remoteInput
     let input
     let results
 
-    beforeEach(function() {
+    beforeEach(function () {
       document.body.innerHTML = `
         <remote-input aria-owns="results" src="/results">
           <input>
@@ -28,16 +28,16 @@ describe('remote-input', function() {
       results = document.querySelector('#results')
     })
 
-    afterEach(function() {
+    afterEach(function () {
       document.body.innerHTML = ''
       remoteInput = null
       input = null
       results = null
     })
 
-    it('emits network events in order', async function() {
+    it('emits network events in order', async function () {
       const events = []
-      const track = event => events.push(event.type)
+      const track = (event) => events.push(event.type)
 
       remoteInput.addEventListener('loadstart', track)
       remoteInput.addEventListener('load', track)
@@ -54,7 +54,7 @@ describe('remote-input', function() {
       assert.deepEqual(['loadstart', 'load', 'loadend'], events)
     })
 
-    it('loads content', async function() {
+    it('loads content', async function () {
       assert.equal(results.innerHTML, '')
 
       const success = once(remoteInput, 'remote-input-success')
@@ -64,10 +64,13 @@ describe('remote-input', function() {
 
       await success
       await loadend
-      assert.equal(results.querySelector('ol').getAttribute('data-src'), '/results?q=test')
+      assert.equal(
+        results.querySelector('ol').getAttribute('data-src'),
+        '/results?q=test'
+      )
     })
 
-    it('handles not ok responses', async function() {
+    it('handles not ok responses', async function () {
       remoteInput.src = '/500'
       assert.equal(results.innerHTML, '')
 
@@ -82,22 +85,28 @@ describe('remote-input', function() {
       assert.equal(results.innerHTML, '', 'nothing was appended')
     })
 
-    it('handles network error', async function() {
+    it('handles network error', async function () {
       remoteInput.src = '/network-error'
       assert.equal(results.innerHTML, '')
 
       const result = once(remoteInput, 'error')
 
       changeValue(input, 'test')
-      assert.ok(remoteInput.hasAttribute('loading'), 'loading attribute should have been added')
+      assert.ok(
+        remoteInput.hasAttribute('loading'),
+        'loading attribute should have been added'
+      )
 
       await result
       await nextTick()
       assert.equal(results.innerHTML, '', 'nothing was appended')
-      assert.notOk(remoteInput.hasAttribute('loading'), 'loading attribute should have been removed')
+      assert.notOk(
+        remoteInput.hasAttribute('loading'),
+        'loading attribute should have been removed'
+      )
     })
 
-    it('repects param attribute', async function() {
+    it('repects param attribute', async function () {
       remoteInput.setAttribute('param', 'robot')
       assert.equal(results.innerHTML, '')
 
@@ -106,35 +115,42 @@ describe('remote-input', function() {
       changeValue(input, 'test')
 
       await result
-      assert.equal(results.querySelector('ol').getAttribute('data-src'), '/results?robot=test')
+      assert.equal(
+        results.querySelector('ol').getAttribute('data-src'),
+        '/results?robot=test'
+      )
     })
 
-    it('loads content again after src is changed', async function() {
+    it('loads content again after src is changed', async function () {
       const result1 = once(remoteInput, 'remote-input-success')
       changeValue(input, 'test')
-      
+
       await result1
-      assert.equal(results.querySelector('ol').getAttribute('data-src'), '/results?q=test')
+      assert.equal(
+        results.querySelector('ol').getAttribute('data-src'),
+        '/results?q=test'
+      )
 
       const result2 = once(remoteInput, 'remote-input-success')
       remoteInput.src = '/srcChanged'
 
       await result2
-      assert.equal(results.querySelector('ol').getAttribute('data-src'), '/srcChanged?q=test')
+      assert.equal(
+        results.querySelector('ol').getAttribute('data-src'),
+        '/srcChanged?q=test'
+      )
     })
 
-    it('check eventType', async function() {
-      const result = new Promise(resolve => {
+    it('check eventType', async function () {
+      const result = new Promise((resolve) => {
         remoteInput.addEventListener('remote-input-success', (event) => {
           resolve(event)
         })
       })
       changeValue(input, 'test')
 
-      result.then((value) => {
-        assert.equal(value.detail.eventType, 'change')
-      })
-      
+      const value = await result
+      assert.equal(value.detail.eventType, 'change')
     })
   })
 })
@@ -149,7 +165,7 @@ function nextTick() {
 }
 
 function once(element, eventName) {
-  return new Promise(resolve => {
-    element.addEventListener(eventName, resolve, {once: true})
+  return new Promise((resolve) => {
+    element.addEventListener(eventName, resolve, { once: true })
   })
 }
