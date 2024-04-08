@@ -4,7 +4,7 @@ class RemoteInputElement extends HTMLElement {
   constructor() {
     super()
     const fetch = fetchResults.bind(null, this, true)
-    const state = {currentQuery: null, oninput: debounce(fetch), fetch, controller: null}
+    const state = {currentQuery: null, oninput: debounce((e: Event) => fetch(e)), fetch, controller: null}
     states.set(this, state)
   }
 
@@ -68,7 +68,7 @@ function makeAbortController() {
   return {signal: null, abort() {}}
 }
 
-async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: boolean) {
+async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: boolean, event?: Event) {
   const input = remoteInput.input
   if (!input) return
 
@@ -112,7 +112,7 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
     remoteInput.removeAttribute('loading')
     state.controller = null
   } catch (error) {
-    if (error.name !== 'AbortError') {
+    if (error instanceof Error && error.name !== 'AbortError') {
       remoteInput.removeAttribute('loading')
       state.controller = null
     }
@@ -121,7 +121,7 @@ async function fetchResults(remoteInput: RemoteInputElement, checkCurrentQuery: 
 
   if (response && response.ok) {
     resultsContainer.innerHTML = html
-    remoteInput.dispatchEvent(new CustomEvent('remote-input-success', {bubbles: true}))
+    remoteInput.dispatchEvent(new CustomEvent('remote-input-success', {bubbles: true, detail: { "eventType": event? event.type : undefined}}))
   } else {
     remoteInput.dispatchEvent(new CustomEvent('remote-input-error', {bubbles: true}))
   }
@@ -134,7 +134,7 @@ async function fetchWithNetworkEvents(el: Element, url: string, options: Request
     el.dispatchEvent(new CustomEvent('loadend'))
     return response
   } catch (error) {
-    if (error.name !== 'AbortError') {
+    if (error instanceof Error && error?.name !== 'AbortError') {
       el.dispatchEvent(new CustomEvent('error'))
       el.dispatchEvent(new CustomEvent('loadend'))
     }
@@ -142,13 +142,13 @@ async function fetchWithNetworkEvents(el: Element, url: string, options: Request
   }
 }
 
-function debounce(callback: () => void) {
+function debounce<T>(callback: (args: T) => void) {
   let timeout: ReturnType<typeof setTimeout>
-  return function() {
+  return function(args: T) {
     clearTimeout(timeout)
     timeout = setTimeout(() => {
       clearTimeout(timeout)
-      callback()
+      callback(args)
     }, 300)
   }
 }

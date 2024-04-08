@@ -112,7 +112,7 @@ describe('remote-input', function() {
     it('loads content again after src is changed', async function() {
       const result1 = once(remoteInput, 'remote-input-success')
       changeValue(input, 'test')
-
+      
       await result1
       assert.equal(results.querySelector('ol').getAttribute('data-src'), '/results?q=test')
 
@@ -121,6 +121,20 @@ describe('remote-input', function() {
 
       await result2
       assert.equal(results.querySelector('ol').getAttribute('data-src'), '/srcChanged?q=test')
+    })
+
+    it('check eventType', async function() {
+      const result = new Promise(resolve => {
+        remoteInput.addEventListener('remote-input-success', (event) => {
+          resolve(event)
+        })
+      })
+      changeValue(input, 'test')
+
+      result.then((value) => {
+        assert.equal(value.detail.eventType, 'change')
+      })
+      
     })
   })
 })
