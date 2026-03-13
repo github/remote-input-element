@@ -1,6 +1,3 @@
-// eslint-disable-next-line no-undef
-process.env.CHROME_BIN = require('chromium').path
-
 function reply(request, response, next) {
   if (request.method === 'GET') { 
     if (request.url.startsWith('/500')) {
