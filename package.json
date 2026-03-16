@@ -23,7 +23,6 @@
   "devDependencies": {
     "@typescript-eslint/parser": "^7.4.0",
     "chai": "^4.1.2",
-    "chromium": "^3.0.3",
     "eslint": "8.56.0",
     "eslint-plugin-github": "4.10.2",
     "eslint-plugin-prettier": "^5.1.3",
