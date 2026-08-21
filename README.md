@@ -75,10 +75,11 @@ npm test
 
 This project uses [Changesets](https://github.com/changesets/changesets) to manage versioning, changelogs, and publishing to npm.
 
-- **Explicit changesets**: When you make a user-facing change, run `npx changeset` and follow the prompts to describe the change and pick a bump type (`patch`, `minor`, or `major`). Commit the generated file in `.changeset/`. Explicit changesets always take precedence over the automatic behavior described below.
-- **Automatic patch releases**: Many merges (for example, Dependabot dependency bumps) don't come with a changeset. The [`release` workflow](.github/workflows/release.yml) runs `scripts/prepare-release.mjs` before invoking `changesets/action`. If no explicit changeset exists, but there are commits merged since the last published release tag, it generates a single synthetic `patch` changeset summarizing those commits (linking pull request numbers when available) so a release PR still gets opened.
-- **Release pull request**: On every push to `main` (or a manual run via `workflow_dispatch`), the workflow opens or updates a "Release: version packages" pull request with the version bump and changelog entry. Merging that pull request triggers the same workflow again, which publishes the new version to npm (with [provenance](https://docs.npmjs.com/generating-provenance-statements)) and to GitHub Packages, and creates the matching git tag.
-- **Manual runs**: Use the "Run workflow" button on the `Release` workflow in the Actions tab (`workflow_dispatch`) at any time to regenerate or refresh the release pull request without waiting for a push to `main`.
+- **Explicit changesets**: For a user-facing change, run `npx changeset`, describe the change, and choose a `patch`, `minor`, or `major` bump. Commit the generated changeset with the change. Explicit changesets take precedence over automatic release entries and are released immediately.
+- **Automatic patch changesets**: On pushes to `main`, the [`release` workflow](.github/workflows/release.yml) runs `scripts/prepare-release.mjs`. When there is no explicit changeset, it creates one deterministic patch changeset per unreleased PR or commit. Each release-note entry links the PR (when available) and commit, followed by the change description.
+- **Dependency-only releases**: Non-security dependency updates wait until the current release is at least 30 days old. Dependency updates identified as security fixes are released immediately. Substantive non-dependency changes are also released immediately.
+- **Release pull request**: The workflow opens or updates a **Release tracking** pull request using the unmodified `changesets/action@v2`. Merging that pull request publishes the package to npm and records the new version and changelog in the repository.
+- **Manual runs**: Use the **Run workflow** button for the `Release` workflow (`workflow_dispatch`) to regenerate or refresh release tracking without waiting for another push to `main`.
 
 ## License
 
