@@ -2,17 +2,17 @@
 // Repository-local Changesets helper.
 //
 // Explicit changesets are released immediately. When changes have merged
-// without a changeset, this script creates one automatically. Dependency-only
-// changes are held until the current release is 30 days old, unless one of the
-// dependency updates contains a security fix.
+// without a changeset, this script creates one automatic changeset per commit.
+// Dependency-only changes are held until the current release is 30 days old,
+// unless one of the dependency updates contains a security fix.
 import {execFileSync} from 'node:child_process'
 import {existsSync, readFileSync, readdirSync, rmSync, writeFileSync} from 'node:fs'
 import path from 'node:path'
 import {fileURLToPath} from 'node:url'
 
-export const AUTO_CHANGESET_FILENAME = 'auto-release.md'
+export const AUTO_CHANGESET_PREFIX = 'auto-release-'
 export const DEFAULT_DEPENDENCY_RELEASE_AGE_DAYS = 30
-const NON_EXPLICIT_FILENAMES = new Set(['README.md', 'config.json', AUTO_CHANGESET_FILENAME])
+const NON_EXPLICIT_FILENAMES = new Set(['README.md', 'config.json'])
 const DAY_MS = 24 * 60 * 60 * 1000
 
 function git(args, cwd) {
@@ -36,9 +36,26 @@ export function getTagDate(tag, cwd) {
   return new Date(Number(git(['log', '-1', '--format=%ct', tag], cwd)) * 1000)
 }
 
+export function isAutoChangeset(name) {
+  return name.startsWith(AUTO_CHANGESET_PREFIX) && name.endsWith('.md')
+}
+
+export function getAutoChangesets(changesetDir) {
+  if (!existsSync(changesetDir)) return []
+  return readdirSync(changesetDir).filter(isAutoChangeset)
+}
+
 export function getExplicitChangesets(changesetDir) {
   if (!existsSync(changesetDir)) return []
-  return readdirSync(changesetDir).filter(name => name.endsWith('.md') && !NON_EXPLICIT_FILENAMES.has(name))
+  return readdirSync(changesetDir).filter(
+    name => name.endsWith('.md') && !NON_EXPLICIT_FILENAMES.has(name) && !isAutoChangeset(name),
+  )
+}
+
+export function removeAutoChangesets(changesetDir) {
+  for (const name of getAutoChangesets(changesetDir)) {
+    rmSync(path.join(changesetDir, name))
+  }
 }
 
 export function getCommitsSinceTag(range, cwd, repository) {
@@ -133,27 +150,26 @@ export function fetchPullRequestWithGh({repository, prNumber, cwd, env = process
   return JSON.parse(output)
 }
 
-export function renderSummary(entries, repository) {
-  return entries
-    .map(entry => {
-      if (entry.prNumber) {
-        return `- ${entry.title} in [#${entry.prNumber}](https://github.com/${repository}/pull/${entry.prNumber})`
-      }
-      return `- ${entry.title} ([\`${entry.shortSha}\`](https://github.com/${repository}/commit/${entry.sha}))`
-    })
-    .join('\n')
+export function renderEntry(entry, repository) {
+  const commit = `[\`${entry.shortSha}\`](https://github.com/${repository}/commit/${entry.sha})`
+  if (entry.prNumber) {
+    return `[#${entry.prNumber}](https://github.com/${repository}/pull/${entry.prNumber}) ${commit} - ${entry.title}`
+  }
+  return `${commit} - ${entry.title}`
 }
 
-export function buildChangesetContent(pkgName, entries, repository) {
-  const summary =
-    entries.length === 1 && !entries[0].prNumber
-      ? renderSummary(entries, repository).replace(/^- /, '')
-      : `Release unreleased changes:\n\n${renderSummary(entries, repository)}`
-  return `---\n"${pkgName}": patch\n---\n\n${summary}\n`
+export function buildChangesetContent(pkgName, entry, repository) {
+  return `---\n"${pkgName}": patch\n---\n\n${renderEntry(entry, repository)}\n`
 }
 
-function removeAutoChangeset(autoChangesetPath) {
-  if (existsSync(autoChangesetPath)) rmSync(autoChangesetPath)
+export function writeAutoChangesets({changesetDir, pkgName, entries, repository}) {
+  removeAutoChangesets(changesetDir)
+  return entries.map(entry => {
+    const filename = `${AUTO_CHANGESET_PREFIX}${entry.shortSha}.md`
+    const changesetPath = path.join(changesetDir, filename)
+    writeFileSync(changesetPath, buildChangesetContent(pkgName, entry, repository))
+    return changesetPath
+  })
 }
 
 export function prepareRelease({
@@ -166,17 +182,16 @@ export function prepareRelease({
 } = {}) {
   const pkg = JSON.parse(readFileSync(path.join(cwd, 'package.json'), 'utf8'))
   const changesetDir = path.join(cwd, '.changeset')
-  const autoChangesetPath = path.join(changesetDir, AUTO_CHANGESET_FILENAME)
 
   const explicit = getExplicitChangesets(changesetDir)
   if (explicit.length > 0) {
-    removeAutoChangeset(autoChangesetPath)
+    removeAutoChangesets(changesetDir)
     return {action: 'skipped-explicit-changeset', changesets: explicit}
   }
 
   const tag = `v${pkg.version}`
   if (!tagExists(tag, cwd)) {
-    removeAutoChangeset(autoChangesetPath)
+    removeAutoChangesets(changesetDir)
     return {action: 'skipped-pending-publication', tag, version: pkg.version}
   }
 
@@ -190,7 +205,7 @@ export function prepareRelease({
   const repository = normalizeRepository(pkg.repository)
   const entries = getCommitsSinceTag(`${tag}..HEAD`, cwd, repository)
   if (entries.length === 0) {
-    removeAutoChangeset(autoChangesetPath)
+    removeAutoChangesets(changesetDir)
     return {action: 'skipped-no-changes', tag}
   }
 
@@ -205,7 +220,7 @@ export function prepareRelease({
       })
 
       if (!securityEntry) {
-        removeAutoChangeset(autoChangesetPath)
+        removeAutoChangesets(changesetDir)
         return {
           action: 'skipped-recent-dependencies',
           tag,
@@ -216,8 +231,8 @@ export function prepareRelease({
     }
   }
 
-  writeFileSync(autoChangesetPath, buildChangesetContent(pkg.name, entries, repository))
-  return {action: 'created', tag, path: autoChangesetPath, entries, dependencyOnly}
+  const paths = writeAutoChangesets({changesetDir, pkgName: pkg.name, entries, repository})
+  return {action: 'created', tag, paths, entries, dependencyOnly}
 }
 
 const isMain = process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])
@@ -240,7 +255,7 @@ if (isMain) {
       )
       break
     case 'created':
-      console.log(`Created synthetic patch changeset at ${result.path} for ${result.entries.length} change(s) since ${result.tag}.`)
+      console.log(`Created ${result.paths.length} synthetic patch changeset(s) for changes since ${result.tag}.`)
       break
     default:
       console.log(`Unhandled result: ${JSON.stringify(result)}`)
