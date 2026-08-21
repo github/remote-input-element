@@ -80,6 +80,30 @@ export function getCommitsSinceTag(range, cwd, repository) {
   return entries
 }
 
+// Normalizes the `repository` field of package.json (which may be a plain
+// "owner/repo" shorthand string, a full git/https URL string, or an object
+// with a `url` property) into a plain "owner/repo" string suitable for
+// building GitHub URLs.
+export function normalizeRepository(repository) {
+  const raw = typeof repository === 'string' ? repository : repository?.url
+  if (!raw) {
+    throw new Error('Unable to determine the GitHub "owner/repo" from package.json\'s "repository" field.')
+  }
+
+  // Plain "owner/repo" shorthand, e.g. "github/remote-input-element".
+  if (/^[^/\s:]+\/[^/\s]+$/.test(raw)) {
+    return raw
+  }
+
+  // A GitHub URL (git/https/ssh), e.g.
+  // "git+https://github.com/owner/repo.git" or "git@github.com:owner/repo.git".
+  const match = raw.match(/(?:^|\/\/|@)github\.com[:/]([^/\s]+\/[^/\s]+?)(?:\.git)?\/?$/)
+  if (!match) {
+    throw new Error(`Unable to parse a GitHub "owner/repo" from repository field: ${JSON.stringify(raw)}`)
+  }
+  return match[1]
+}
+
 function parseCommit({sha, subject, body}, repository) {
   const shortSha = sha.slice(0, 7)
   const mergeMatch = subject.match(/^Merge pull request #(\d+) from/)
@@ -151,7 +175,8 @@ export function prepareRelease({cwd = process.cwd()} = {}) {
   }
 
   const range = `${tag}..HEAD`
-  const entries = getCommitsSinceTag(range, cwd, pkg.repository)
+  const repository = normalizeRepository(pkg.repository)
+  const entries = getCommitsSinceTag(range, cwd, repository)
   if (entries.length === 0) {
     if (existsSync(autoChangesetPath)) {
       rmSync(autoChangesetPath)
@@ -159,7 +184,7 @@ export function prepareRelease({cwd = process.cwd()} = {}) {
     return {action: 'skipped-no-changes', tag}
   }
 
-  const content = buildChangesetContent(pkg.name, entries, pkg.repository)
+  const content = buildChangesetContent(pkg.name, entries, repository)
   writeFileSync(autoChangesetPath, content)
   return {action: 'created', tag, path: autoChangesetPath, entries}
 }

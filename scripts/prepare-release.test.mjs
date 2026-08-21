@@ -5,7 +5,7 @@ import os from 'node:os'
 import path from 'node:path'
 import {test, describe, beforeEach, afterEach} from 'node:test'
 
-import {prepareRelease, AUTO_CHANGESET_FILENAME} from './prepare-release.mjs'
+import {prepareRelease, AUTO_CHANGESET_FILENAME, normalizeRepository} from './prepare-release.mjs'
 
 function git(args, cwd) {
   return execFileSync('git', args, {cwd, encoding: 'utf8'}).trim()
@@ -39,6 +39,30 @@ beforeEach(() => {
 
 afterEach(() => {
   rmSync(repoDir, {recursive: true, force: true})
+})
+
+describe('normalizeRepository', () => {
+  test('accepts the "owner/repo" shorthand string', () => {
+    assert.equal(normalizeRepository('github/remote-input-element'), 'github/remote-input-element')
+  })
+
+  test('accepts a full git URL string', () => {
+    assert.equal(
+      normalizeRepository('git+https://github.com/github/remote-input-element.git'),
+      'github/remote-input-element',
+    )
+  })
+
+  test('accepts an object with a url property', () => {
+    assert.equal(
+      normalizeRepository({type: 'git', url: 'https://github.com/github/remote-input-element.git'}),
+      'github/remote-input-element',
+    )
+  })
+
+  test('rejects a non-GitHub URL instead of extracting the wrong owner/repo', () => {
+    assert.throws(() => normalizeRepository('https://notgithub.com/owner/repo'))
+  })
 })
 
 describe('prepareRelease', () => {
