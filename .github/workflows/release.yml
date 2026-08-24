@@ -19,8 +19,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # Full history and tags are required so the release-preparation
-          # script can compare against the previous release tag.
+          # Full history and tags let Changesets generate GitHub changelogs
+          # with the correct commits.
           fetch-depth: 0
 
       - uses: actions/setup-node@v4
@@ -34,14 +34,10 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Prepare release (synthetic changeset for unreleased changes)
-        run: npm run prepare-release
-
       - name: Create release pull request or publish
         uses: changesets/action@v2
         with:
-          pr-title: 'Release tracking'
-          commit-message: 'chore: version packages'
-          publish-script: npm run release
+          title: 'Release tracking'
+          publish: npm run release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
