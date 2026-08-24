@@ -56,4 +56,10 @@ jobs:
         run: node scripts/dependabot-changeset.mjs
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-          DEPENDABOT_METADATA_JSON: ${{ toJson(steps.metadata.outputs) }}
+          DEPENDABOT_DEPENDENCY_NAMES: ${{ steps.metadata.outputs.dependency-names }}
+          DEPENDABOT_DEPENDENCY_TYPE: ${{ steps.metadata.outputs.dependency-type }}
+          DEPENDABOT_UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}
+          DEPENDABOT_UPDATED_DEPENDENCIES_JSON: ${{ steps.metadata.outputs.updated-dependencies-json }}
+          DEPENDABOT_ALERT_STATE: ${{ steps.metadata.outputs.alert-state }}
+          DEPENDABOT_GHSA_ID: ${{ steps.metadata.outputs.ghsa-id }}
+          DEPENDABOT_CVSS: ${{ steps.metadata.outputs.cvss }}

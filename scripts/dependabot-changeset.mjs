@@ -190,9 +190,23 @@ export async function applyDependabotChangeset({event, metadata, token}) {
   return {action: existing ? 'updated' : 'created', path: changesetPath, policy}
 }
 
+function metadataFromEnv(env) {
+  if (env.DEPENDABOT_METADATA_JSON) return JSON.parse(env.DEPENDABOT_METADATA_JSON)
+
+  return {
+    'dependency-names': env.DEPENDABOT_DEPENDENCY_NAMES ?? '',
+    'dependency-type': env.DEPENDABOT_DEPENDENCY_TYPE ?? '',
+    'update-type': env.DEPENDABOT_UPDATE_TYPE ?? '',
+    'updated-dependencies-json': env.DEPENDABOT_UPDATED_DEPENDENCIES_JSON ?? '',
+    'alert-state': env.DEPENDABOT_ALERT_STATE ?? '',
+    'ghsa-id': env.DEPENDABOT_GHSA_ID ?? '',
+    cvss: env.DEPENDABOT_CVSS ?? '',
+  }
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   const event = JSON.parse(process.env.GITHUB_EVENT_JSON ?? readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'))
-  const metadata = JSON.parse(process.env.DEPENDABOT_METADATA_JSON)
+  const metadata = metadataFromEnv(process.env)
   const token = process.env.GITHUB_TOKEN
   if (!token) throw new Error('GITHUB_TOKEN is required.')
 
