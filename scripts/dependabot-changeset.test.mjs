@@ -140,14 +140,20 @@ describe('applyDependabotChangeset', () => {
     const originalFetch = globalThis.fetch
 
     globalThis.fetch = async (url, init = {}) => {
-      const {pathname} = new URL(url)
+      const {pathname, searchParams} = new URL(url)
       requests.push({pathname, method: init.method ?? 'GET', body: init.body ? JSON.parse(init.body) : undefined})
 
       if (pathname === '/repos/github/remote-input-element/contents/package.json') {
+        // Both `base.sha` and `head.sha` resolve to the same manifest so this PR no longer
+        // qualifies (a lockfile-only update), matching the scenario under test.
+        const ref = searchParams.get('ref')
+        const pkg = ref === 'base-sha' || ref === 'head-sha' ? basePackage : undefined
+        if (!pkg) throw new Error(`Unexpected ref ${ref}`)
+
         return {
           ok: true,
           status: 200,
-          json: async () => ({content: Buffer.from(JSON.stringify(basePackage)).toString('base64')}),
+          json: async () => ({content: Buffer.from(JSON.stringify(pkg)).toString('base64')}),
         }
       }
 
