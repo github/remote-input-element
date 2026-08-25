@@ -191,16 +191,11 @@ export async function applyDependabotChangeset({event, metadata, token}) {
 }
 
 function metadataFromEnv(env) {
-  if (env.DEPENDABOT_METADATA_JSON) return JSON.parse(env.DEPENDABOT_METADATA_JSON)
-
   return {
     'dependency-names': env.DEPENDABOT_DEPENDENCY_NAMES ?? '',
-    'dependency-type': env.DEPENDABOT_DEPENDENCY_TYPE ?? '',
-    'update-type': env.DEPENDABOT_UPDATE_TYPE ?? '',
     'updated-dependencies-json': env.DEPENDABOT_UPDATED_DEPENDENCIES_JSON ?? '',
     'alert-state': env.DEPENDABOT_ALERT_STATE ?? '',
     'ghsa-id': env.DEPENDABOT_GHSA_ID ?? '',
-    cvss: env.DEPENDABOT_CVSS ?? '',
   }
 }
 

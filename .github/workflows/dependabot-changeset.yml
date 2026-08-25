@@ -8,22 +8,14 @@ on:
       - synchronize
 
 permissions:
-  contents: write
+  contents: read
   pull-requests: read
-  security-events: read
 
 jobs:
   changeset:
     if: github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
-      - name: Verify Dependabot author
-        run: |
-          if [ "${{ github.event.pull_request.user.login }}" != "dependabot[bot]" ]; then
-            echo "This workflow only modifies Dependabot-authored pull requests."
-            exit 1
-          fi
-
       - name: Create GitHub App token
         id: app-token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
@@ -57,9 +49,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           DEPENDABOT_DEPENDENCY_NAMES: ${{ steps.metadata.outputs.dependency-names }}
-          DEPENDABOT_DEPENDENCY_TYPE: ${{ steps.metadata.outputs.dependency-type }}
-          DEPENDABOT_UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}
           DEPENDABOT_UPDATED_DEPENDENCIES_JSON: ${{ steps.metadata.outputs.updated-dependencies-json }}
           DEPENDABOT_ALERT_STATE: ${{ steps.metadata.outputs.alert-state }}
           DEPENDABOT_GHSA_ID: ${{ steps.metadata.outputs.ghsa-id }}
-          DEPENDABOT_CVSS: ${{ steps.metadata.outputs.cvss }}
