@@ -28,7 +28,7 @@ jobs:
             exit 0
           fi
 
-          changesets=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/files" --paginate --jq '.[].filename' | grep -E '^\.changeset/[^/]+\.md$' | grep -Ev '^\.changeset/(README\.md|dependabot-[0-9]+\.md)$' || true)
+          changesets=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/files" --paginate --jq '.[] | select(.status != "removed") | .filename' | grep -E '^\.changeset/[^/]+\.md$' | grep -Ev '^\.changeset/(README\.md|dependabot-[0-9]+\.md)$' || true)
           if [ -n "$changesets" ]; then
             echo 'The ".changeset/*.md" file pattern matched the changed files of the pull request.'
             exit 0

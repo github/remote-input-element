@@ -23,7 +23,7 @@
     "test": "karma start test/karma.config.js",
     "test:dependabot-changeset": "node --test scripts/dependabot-changeset.test.mjs",
     "changeset": "changeset",
-    "release": "changeset publish",
+    "release": "npm_config_ignore_scripts=true changeset publish",
     "prepublishOnly": "npm run build",
     "postpublish": "npm publish --ignore-scripts --@github:registry='https://npm.pkg.github.com'"
   },

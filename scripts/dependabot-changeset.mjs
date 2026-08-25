@@ -39,7 +39,9 @@ export function getDependencyNames(metadata) {
 
 export function isSecurityUpdate(metadata) {
   const alertState = String(metadata['alert-state'] ?? '').trim().toLowerCase()
-  return alertState === 'fixed' || parseList(metadata['ghsa-id']).length > 0
+  if (alertState === 'fixed') return true
+  if (alertState === 'dismissed') return false
+  return parseList(metadata['ghsa-id']).length > 0
 }
 
 export function getProductionRangeChanges({basePackage, headPackage, dependencyNames}) {

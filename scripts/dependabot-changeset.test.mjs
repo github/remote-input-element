@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
+import {Buffer} from 'node:buffer'
 import {describe, test} from 'node:test'
 
-import {evaluatePolicy, renderChangeset} from './dependabot-changeset.mjs'
+import {applyDependabotChangeset, evaluatePolicy, renderChangeset} from './dependabot-changeset.mjs'
 
 const basePackage = {
   name: '@github/remote-input-element',
@@ -128,5 +129,68 @@ describe('evaluatePolicy', () => {
 
     assert.equal(qualifying.qualifies, true)
     assert.equal(noLongerQualifying.qualifies, false)
+  })
+})
+
+describe('applyDependabotChangeset', () => {
+  test('removes the existing changeset when the PR no longer qualifies', async t => {
+    const changesetPath = '.changeset/dependabot-54.md'
+    const existingSha = 'existing-sha'
+    const requests = []
+    const originalFetch = globalThis.fetch
+
+    globalThis.fetch = async (url, init = {}) => {
+      const {pathname} = new URL(url)
+      requests.push({pathname, method: init.method ?? 'GET', body: init.body ? JSON.parse(init.body) : undefined})
+
+      if (pathname === '/repos/github/remote-input-element/contents/package.json') {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({content: Buffer.from(JSON.stringify(basePackage)).toString('base64')}),
+        }
+      }
+
+      if (pathname === `/repos/github/remote-input-element/contents/${changesetPath}`) {
+        if ((init.method ?? 'GET') === 'DELETE') {
+          return {ok: true, status: 200, json: async () => ({})}
+        }
+
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({sha: existingSha, content: Buffer.from('placeholder').toString('base64')}),
+        }
+      }
+
+      throw new Error(`Unexpected request to ${url}`)
+    }
+    t.after(() => {
+      globalThis.fetch = originalFetch
+    })
+
+    const event = {
+      pull_request: {
+        number: 54,
+        user: {login: 'dependabot[bot]'},
+        base: {sha: 'base-sha'},
+        head: {sha: 'head-sha', ref: 'dependabot/npm_and_yarn/remote-form-2.0.1', repo: {full_name: 'github/remote-input-element'}},
+      },
+      repository: {full_name: 'github/remote-input-element'},
+    }
+
+    const result = await applyDependabotChangeset({
+      event,
+      metadata: {'dependency-names': 'remote-form', 'alert-state': ''},
+      token: 'test-token',
+    })
+
+    assert.equal(result.action, 'removed')
+
+    const deleteRequest = requests.find(request => request.method === 'DELETE')
+    assert.ok(deleteRequest, 'expected a DELETE request for the changeset')
+    assert.equal(deleteRequest.pathname, `/repos/github/remote-input-element/contents/${changesetPath}`)
+    assert.equal(deleteRequest.body.branch, 'dependabot/npm_and_yarn/remote-form-2.0.1')
+    assert.equal(deleteRequest.body.sha, existingSha)
   })
 })
