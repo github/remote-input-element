@@ -23,7 +23,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          if jq -e '.pull_request.labels | map(.name) | any(. == "skip changeset")' "$GITHUB_EVENT_PATH" >/dev/null; then
+          if gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/labels" --paginate --jq '.[].name' | grep -qx 'skip changeset'; then
             echo 'The "skip changeset" label is present.'
             exit 0
           fi
