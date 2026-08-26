@@ -38,10 +38,18 @@ export function getDependencyNames(metadata) {
 }
 
 export function isSecurityUpdate(metadata) {
-  const alertState = String(metadata['alert-state'] ?? '').trim().toLowerCase()
-  if (alertState === 'fixed') return true
-  if (alertState === 'dismissed') return false
-  return parseList(metadata['ghsa-id']).length > 0
+  let dependencies = []
+  try {
+    const parsed = JSON.parse(metadata['updated-dependencies-json'] ?? '[]')
+    dependencies = Array.isArray(parsed) ? parsed : []
+  } catch {}
+
+  return [{alertState: metadata['alert-state'], ghsaId: metadata['ghsa-id']}, ...dependencies].some(dependency => {
+    const alertState = String(dependency.alertState ?? dependency['alert-state'] ?? '').trim().toLowerCase()
+    if (alertState === 'fixed') return true
+    if (alertState === 'dismissed') return false
+    return parseList(dependency.ghsaId ?? dependency['ghsa-id']).length > 0
+  })
 }
 
 export function getProductionRangeChanges({basePackage, headPackage, dependencyNames}) {
