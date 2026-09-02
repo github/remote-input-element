@@ -24,3 +24,5 @@ jobs:
         run: npm run build
       - name: Run test
         run: npm run test
+      - name: Run Dependabot changeset policy tests
+        run: npm run test:dependabot-changeset

@@ -1,0 +1,38 @@
+name: Check for changeset
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - labeled
+      - unlabeled
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  check:
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for changeset or skip label
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          if gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/labels" --paginate --jq '.[].name' | grep -qx 'skip changeset'; then
+            echo 'The "skip changeset" label is present.'
+            exit 0
+          fi
+
+          changesets=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/files" --paginate --jq '.[] | select(.status != "removed") | .filename' | grep -E '^\.changeset/[^/]+\.md$' | grep -Ev '^\.changeset/(README\.md|dependabot-[0-9]+\.md)$' || true)
+          if [ -n "$changesets" ]; then
+            echo 'The ".changeset/*.md" file pattern matched the changed files of the pull request.'
+            exit 0
+          fi
+
+          echo 'No changeset found. If these changes should not result in a new version, apply the "skip changeset" label to this pull request. If these changes should result in a version bump, run "npx changeset" and commit the generated file.'
+          exit 1
