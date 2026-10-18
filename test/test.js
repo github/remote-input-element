@@ -35,6 +35,31 @@ describe('remote-input', function () {
       results = null
     })
 
+    for (const missing of ['source', 'results']) {
+      it(`retries an unchanged query when the missing ${missing} becomes available`, async function () {
+        if (missing === 'source') remoteInput.removeAttribute('src')
+        else results.remove()
+        let loads = 0
+        remoteInput.addEventListener('loadstart', () => loads++)
+        changeValue(input, 'test')
+        assert.equal(loads, 0)
+
+        if (missing === 'source') remoteInput.src = '/results'
+        else document.body.append(results)
+        const success = once(remoteInput, 'remote-input-success')
+        input.dispatchEvent(new Event('focus'))
+        await success
+        assert.equal(loads, 1)
+        assert.equal(
+          results.querySelector('ol').getAttribute('data-src'),
+          '/results?q=test'
+        )
+
+        input.dispatchEvent(new Event('focus'))
+        assert.equal(loads, 1)
+      })
+    }
+
     it('emits network events in order', async function () {
       const events = []
       const track = (event) => events.push(event.type)

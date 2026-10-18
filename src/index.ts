@@ -89,8 +89,6 @@ async function fetchResults(
   const query = input.value
   if (checkCurrentQuery && state.currentQuery === query) return
 
-  state.currentQuery = query
-
   const src = remoteInput.src
   if (!src) return
 
@@ -98,6 +96,8 @@ async function fetchResults(
     remoteInput.getAttribute('aria-owns') || ''
   )
   if (!resultsContainer) return
+
+  state.currentQuery = query
 
   const url = new URL(src, window.location.href)
   const params = new URLSearchParams(url.search)
