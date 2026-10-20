@@ -100,6 +100,12 @@ async function fetchResults(
   state.currentQuery = query
 
   const url = new URL(src, window.location.href)
+  if (url.origin !== window.location.origin) {
+    remoteInput.dispatchEvent(
+      new CustomEvent('remote-input-error', { bubbles: true })
+    )
+    return
+  }
   const params = new URLSearchParams(url.search)
   params.append(remoteInput.getAttribute('param') || 'q', query)
   url.search = params.toString()
