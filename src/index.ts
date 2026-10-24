@@ -101,6 +101,13 @@ async function fetchResults(
 
   const url = new URL(src, window.location.href)
   if (url.origin !== window.location.origin) {
+    // Cancel and invalidate any pending request so it can't render stale results.
+    if (state.controller) {
+      state.controller.abort()
+      state.controller = null
+      remoteInput.removeAttribute('loading')
+      remoteInput.dispatchEvent(new CustomEvent('loadend'))
+    }
     remoteInput.dispatchEvent(
       new CustomEvent('remote-input-error', { bubbles: true })
     )
@@ -117,21 +124,29 @@ async function fetchResults(
     remoteInput.setAttribute('loading', '')
   }
 
-  state.controller = makeAbortController()
+  const controller = makeAbortController()
+  state.controller = controller
 
   let response
   let html = ''
   try {
     response = await fetchWithNetworkEvents(remoteInput, url.toString(), {
-      signal: state.controller.signal,
+      signal: controller.signal,
       credentials: 'same-origin',
+      mode: 'same-origin',
       headers: { accept: 'text/fragment+html' }
     })
     html = await response.text()
+    // A newer request (or a rejected src) superseded this one.
+    if (state.controller !== controller) return
     remoteInput.removeAttribute('loading')
     state.controller = null
   } catch (error) {
-    if (error instanceof Error && error.name !== 'AbortError') {
+    if (
+      error instanceof Error &&
+      error.name !== 'AbortError' &&
+      state.controller === controller
+    ) {
       remoteInput.removeAttribute('loading')
       state.controller = null
     }

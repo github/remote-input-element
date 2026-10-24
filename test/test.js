@@ -131,6 +131,46 @@ describe('remote-input', function () {
       )
     })
 
+    it('rejects a cross-origin src', async function () {
+      remoteInput.src = 'https://example.com/results'
+      const error = once(remoteInput, 'remote-input-error')
+      changeValue(input, 'test')
+      await error
+      assert.equal(results.innerHTML, '')
+    })
+
+    it('does not follow cross-origin redirects', async function () {
+      remoteInput.src = '/redirect'
+      const error = once(remoteInput, 'error')
+      let succeeded = false
+      remoteInput.addEventListener('remote-input-success', () => {
+        succeeded = true
+      })
+      changeValue(input, 'test')
+      await error
+      assert.notOk(succeeded)
+      assert.equal(results.innerHTML, '')
+    })
+
+    it('cancels a pending request when src becomes cross-origin', async function () {
+      remoteInput.src = '/slow'
+      let succeeded = false
+      remoteInput.addEventListener('remote-input-success', () => {
+        succeeded = true
+      })
+      changeValue(input, 'test')
+      assert.ok(remoteInput.hasAttribute('loading'))
+
+      const error = once(remoteInput, 'remote-input-error')
+      remoteInput.src = 'https://example.com/results'
+      await error
+      assert.notOk(remoteInput.hasAttribute('loading'))
+
+      await new Promise((resolve) => setTimeout(resolve, 400))
+      assert.notOk(succeeded, 'stale response must not emit success')
+      assert.equal(results.innerHTML, '')
+    })
+
     it('repects param attribute', async function () {
       remoteInput.setAttribute('param', 'robot')
       assert.equal(results.innerHTML, '')
