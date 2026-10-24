@@ -4,6 +4,18 @@ function reply(request, response, next) {
       response.writeHead(500)
       response.ok = false
       response.end('Server error')
+    } else if (request.url.startsWith('/redirect')) {
+      const host = request.headers.host || ''
+      const other = host.startsWith('localhost') ? '127.0.0.1' : 'localhost'
+      response.writeHead(302, {
+        location: `http://${other}:${host.split(':')[1]}/results`
+      })
+      response.end()
+    } else if (request.url.startsWith('/slow')) {
+      setTimeout(() => {
+        response.writeHead(200)
+        response.end('<ol data-src="slow"><li>stale</li></ol>')
+      }, 200)
     } else if (request.url.startsWith('/network-error')) {
       request.destroy(new Error())
       response.end()
