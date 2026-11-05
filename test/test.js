@@ -150,6 +150,8 @@ describe('remote-input', function () {
       await error
       assert.notOk(succeeded)
       assert.equal(results.innerHTML, '')
+      const hits = await (await fetch('/redirect-hits')).text()
+      assert.equal(hits, '0', 'cross-origin redirect target was requested')
     })
 
     it('cancels a pending request when src becomes cross-origin', async function () {
@@ -162,11 +164,14 @@ describe('remote-input', function () {
       assert.ok(remoteInput.hasAttribute('loading'))
 
       const error = once(remoteInput, 'remote-input-error')
+      let loadends = 0
+      remoteInput.addEventListener('loadend', () => loadends++)
       remoteInput.src = 'https://example.com/results'
       await error
       assert.notOk(remoteInput.hasAttribute('loading'))
 
       await new Promise((resolve) => setTimeout(resolve, 400))
+      assert.equal(loadends, 1, 'exactly one loadend')
       assert.notOk(succeeded, 'stale response must not emit success')
       assert.equal(results.innerHTML, '')
     })

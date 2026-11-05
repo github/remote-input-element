@@ -8,7 +8,8 @@ class RemoteInputElement extends HTMLElement {
       currentQuery: null,
       oninput: debounce<Event>((e) => fetch(e)),
       fetch,
-      controller: null
+      controller: null,
+      ended: false
     }
     states.set(this, state)
   }
@@ -106,7 +107,8 @@ async function fetchResults(
       state.controller.abort()
       state.controller = null
       remoteInput.removeAttribute('loading')
-      remoteInput.dispatchEvent(new CustomEvent('loadend'))
+      // The helper already emitted `loadend` if headers arrived.
+      if (!state.ended) remoteInput.dispatchEvent(new CustomEvent('loadend'))
     }
     remoteInput.dispatchEvent(
       new CustomEvent('remote-input-error', { bubbles: true })
@@ -126,16 +128,26 @@ async function fetchResults(
 
   const controller = makeAbortController()
   state.controller = controller
+  state.ended = false
+  const isCurrent = () => state.controller === controller
 
   let response
   let html = ''
   try {
-    response = await fetchWithNetworkEvents(remoteInput, url.toString(), {
-      signal: controller.signal,
-      credentials: 'same-origin',
-      mode: 'same-origin',
-      headers: { accept: 'text/fragment+html' }
-    })
+    response = await fetchWithNetworkEvents(
+      remoteInput,
+      url.toString(),
+      {
+        signal: controller.signal,
+        credentials: 'same-origin',
+        mode: 'same-origin',
+        headers: { accept: 'text/fragment+html' }
+      },
+      isCurrent,
+      () => {
+        state.ended = true
+      }
+    )
     html = await response.text()
     // A newer request (or a rejected src) superseded this one.
     if (state.controller !== controller) return
@@ -171,16 +183,23 @@ async function fetchResults(
 async function fetchWithNetworkEvents(
   el: Element,
   url: string,
-  options: RequestInit
+  options: RequestInit,
+  isCurrent: () => boolean,
+  onEnd: () => void
 ): Promise<Response> {
   try {
     const response = await fetch(url, options)
-    el.dispatchEvent(new CustomEvent('load'))
-    el.dispatchEvent(new CustomEvent('loadend'))
+    // Invalidated requests must not emit events that affect a newer request.
+    if (isCurrent()) {
+      el.dispatchEvent(new CustomEvent('load'))
+      onEnd()
+      el.dispatchEvent(new CustomEvent('loadend'))
+    }
     return response
   } catch (error) {
-    if (error instanceof Error && error?.name !== 'AbortError') {
+    if (error instanceof Error && error?.name !== 'AbortError' && isCurrent()) {
       el.dispatchEvent(new CustomEvent('error'))
+      onEnd()
       el.dispatchEvent(new CustomEvent('loadend'))
     }
     throw error

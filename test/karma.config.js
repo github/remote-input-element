@@ -1,14 +1,25 @@
+let redirectTargetHits = 0
+
 function reply(request, response, next) {
   if (request.method === 'GET') { 
     if (request.url.startsWith('/500')) {
       response.writeHead(500)
       response.ok = false
       response.end('Server error')
+    } else if (request.url.startsWith('/redirect-hits')) {
+      response.writeHead(200)
+      response.end(String(redirectTargetHits))
+    } else if (request.url.startsWith('/redirect-target')) {
+      // CORS-readable, so a regression in request blocking is not masked.
+      redirectTargetHits++
+      response.writeHead(200, { 'access-control-allow-origin': '*' })
+      response.end('<ol><li>cross-origin</li></ol>')
     } else if (request.url.startsWith('/redirect')) {
+      redirectTargetHits = 0
       const host = request.headers.host || ''
       const other = host.startsWith('localhost') ? '127.0.0.1' : 'localhost'
       response.writeHead(302, {
-        location: `http://${other}:${host.split(':')[1]}/results`
+        location: `http://${other}:${host.split(':')[1]}/redirect-target`
       })
       response.end()
     } else if (request.url.startsWith('/slow')) {
