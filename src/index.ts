@@ -192,15 +192,21 @@ async function fetchWithNetworkEvents(
     // Invalidated requests must not emit events that affect a newer request.
     if (isCurrent()) {
       el.dispatchEvent(new CustomEvent('load'))
-      onEnd()
-      el.dispatchEvent(new CustomEvent('loadend'))
+      // A `load` listener may have changed `src`, invalidating this request.
+      if (isCurrent()) {
+        onEnd()
+        el.dispatchEvent(new CustomEvent('loadend'))
+      }
     }
     return response
   } catch (error) {
     if (error instanceof Error && error?.name !== 'AbortError' && isCurrent()) {
       el.dispatchEvent(new CustomEvent('error'))
-      onEnd()
-      el.dispatchEvent(new CustomEvent('loadend'))
+      // An `error` listener may have changed `src`, invalidating this request.
+      if (isCurrent()) {
+        onEnd()
+        el.dispatchEvent(new CustomEvent('loadend'))
+      }
     }
     throw error
   }

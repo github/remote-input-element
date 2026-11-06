@@ -176,6 +176,24 @@ describe('remote-input', function () {
       assert.equal(results.innerHTML, '')
     })
 
+    it('emits a single loadend when a load listener rejects src', async function () {
+      let loadends = 0
+      remoteInput.addEventListener('loadend', () => loadends++)
+      remoteInput.addEventListener(
+        'load',
+        () => {
+          remoteInput.src = 'https://example.com/results'
+        },
+        { once: true }
+      )
+      const error = once(remoteInput, 'remote-input-error')
+      changeValue(input, 'test')
+      await error
+      await nextTick()
+      assert.equal(loadends, 1, 'exactly one loadend')
+      assert.notOk(remoteInput.hasAttribute('loading'))
+    })
+
     it('repects param attribute', async function () {
       remoteInput.setAttribute('param', 'robot')
       assert.equal(results.innerHTML, '')
